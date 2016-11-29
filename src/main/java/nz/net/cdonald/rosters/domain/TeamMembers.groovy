@@ -1,27 +1,27 @@
 package nz.net.cdonald.rosters.domain
 
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
-import javax.persistence.*;
+import javax.persistence.*
 
 @Entity
 @IdClass(TeamMembersId.class)
 @CompileStatic
 public class TeamMembers {
 
-    @EmbeddedId
-    long operatorId;
+	@EmbeddedId
+	long operatorId;
 
-    @EmbeddedId
-    long teamId;
+	@EmbeddedId
+	long teamId;
 
-    @ManyToOne
-    Operator operator;
+	@ManyToOne
+	Operator operator;
 
-    @ManyToOne
-    Team team;
+	@ManyToOne
+	Team team;
 
-    @Column
-    long rosterWeighting;
+	@Column
+	long rosterWeighting;
 
 }

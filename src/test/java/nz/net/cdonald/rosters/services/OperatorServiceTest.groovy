@@ -2,7 +2,6 @@ package nz.net.cdonald.rosters.services
 
 import com.avaje.ebean.EbeanServer
 import nz.net.cdonald.rosters.domain.Operator
-import nz.net.cdonald.rosters.services.OperatorService
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,7 +38,7 @@ class OperatorServiceTest extends Assert {
 		server.save(o2)
 
 		def list = operatorService.getOperators()
-		assertEquals(2,list.size())
+		assertEquals(2, list.size())
 
 		assertTrue(list.get(0).firstName == "Baz")
 		assertTrue(list.get(1).firstName == "Foo")
@@ -54,9 +53,9 @@ class OperatorServiceTest extends Assert {
 		server.save(o1)
 
 		def o = operatorService.getOperator(o1.id)
-		assertEquals("abc",o.firstName)
-		assertEquals("def",o.lastName)
-		assertEquals("foo@baz.com",o.email)
+		assertEquals("abc", o.firstName)
+		assertEquals("def", o.lastName)
+		assertEquals("foo@baz.com", o.email)
 	}
 
 	@Test
@@ -84,7 +83,7 @@ class OperatorServiceTest extends Assert {
 
 		def o2 = operatorService.updateOperator(o1)
 
-		assertEquals("zyx",o2.firstName)
+		assertEquals("zyx", o2.firstName)
 	}
 
 	@Test
