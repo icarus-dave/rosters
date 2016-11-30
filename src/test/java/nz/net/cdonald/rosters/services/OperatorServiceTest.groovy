@@ -2,14 +2,13 @@ package nz.net.cdonald.rosters.services
 
 import com.avaje.ebean.EbeanServer
 import nz.net.cdonald.rosters.domain.Operator
+import org.junit.After
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
-
-import javax.persistence.PersistenceException
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -20,6 +19,11 @@ class OperatorServiceTest extends Assert {
 
 	@Autowired
 	OperatorService operatorService
+
+	@After
+	public void clear() {
+		server.deleteAll(server.find(Operator.class).findList())
+	}
 
 	@Test
 	public void testList() throws Exception {
@@ -34,7 +38,7 @@ class OperatorServiceTest extends Assert {
 		def o2 = new Operator()
 		o2.firstName = "Baz"
 		o2.lastName = "aFoo"
-		o2.email = "foo@baz.com"
+		o2.email = "foo@foo.com"
 		server.save(o2)
 
 		def list = operatorService.getOperators()
@@ -102,7 +106,7 @@ class OperatorServiceTest extends Assert {
 		def ex
 		try {
 			operatorService.createOperator(o2)
-		} catch (PersistenceException e) {
+		} catch (IllegalArgumentException e) {
 			ex = e
 		}
 		assertNotNull(ex)
@@ -116,10 +120,34 @@ class OperatorServiceTest extends Assert {
 		def ex2
 		try {
 			operatorService.updateOperator(o2)
-		} catch (PersistenceException e) {
+		} catch (IllegalArgumentException e) {
 			ex2 = e
 		}
 		assertNotNull(ex2)
+	}
+
+	@Test
+	public void testCreateSpaceyMail() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "     foo@baz.com    "
+		operatorService.createOperator(o1)
+		assertEquals("abc", server.find(Operator.class).where().eq("email", "foo@baz.com").findUnique().firstName)
+	}
+
+	@Test
+	public void testUpdateSpaceyMail() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.org"
+		operatorService.createOperator(o1)
+
+		o1.email = "     baz@foo.org    "
+		operatorService.updateOperator(o1)
+
+		assertEquals("abc", server.find(Operator.class).where().eq("email", "baz@foo.org").findUnique().firstName)
 	}
 }
 
