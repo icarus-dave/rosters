@@ -26,4 +26,8 @@ public class Duty extends BaseModel {
 	@JoinTable(name = "stand_downs")
 	List<Operator> standDowns;
 
+	@ManyToMany
+	@JoinTable(name = "replacements")
+	List<Operator> replacements;
+
 }

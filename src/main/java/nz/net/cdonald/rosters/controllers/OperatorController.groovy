@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+
 
 @RestController
 @RequestMapping("/operator")
@@ -23,7 +23,7 @@ class OperatorController {
 	@RequestMapping("/{id}")
 	public ResponseEntity getOperator(@PathVariable long id) {
 		def op = operatorService.getOperator(id)
-		if (op == null) return new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND.value(),"Operator not found"),HttpStatus.NOT_FOUND)
+		if (op == null) return new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Operator not found"), HttpStatus.NOT_FOUND)
 
 		return new ResponseEntity<Operator>(op, HttpStatus.OK)
 	}
@@ -33,15 +33,12 @@ class OperatorController {
 		return operatorService.createOperator(operator)
 	}
 
-	@RequestMapping(method = RequestMethod.PUT)
-	public Operator updateOperator(@RequestBody Operator operator) {
-		return operatorService.updateOperator(operator)
-	}
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	public ResponseEntity updateOperator(@RequestBody Operator operator, @PathVariable long id) {
+		if (operator.id == null || id != operator.id) return new ResponseEntity(
+				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id and path id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
 
-	@ExceptionHandler([IllegalArgumentException.class, MethodArgumentTypeMismatchException.class])
-	public ResponseEntity handleBadRequests() throws IOException {
-		def res = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),"Invalid parameter provided")
-		return new ResponseEntity(res, HttpStatus.BAD_REQUEST)
+		return new ResponseEntity(operatorService.updateOperator(operator), HttpStatus.OK)
 	}
 
 }
