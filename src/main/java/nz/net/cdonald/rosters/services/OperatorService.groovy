@@ -32,11 +32,11 @@ class OperatorService {
 	public Operator createOperator(Operator operator) {
 		if (!validateEmail(operator.email)) throw new IllegalArgumentException("Email invalid")
 
-		//provide a nicer exception than would otherwise be thrown
+		//provide a nicer exception than would otherwise be thrown (and also case insensitive)
 		if (emailExists(operator.email)) throw new IllegalArgumentException("Email already in use")
 
 		operator.id = null
-		operator.email = operator.email.trim()
+		operator.email = operator.email.trim().toLowerCase()
 
 		server.save(operator)
 		logger.info("Created operator ${operator?.id} - ${operator?.email}")
@@ -46,7 +46,7 @@ class OperatorService {
 	public Operator updateOperator(Operator operator) {
 		if (!validateEmail(operator.email)) throw new IllegalArgumentException("Email invalid")
 
-		operator.email = operator.email.trim()
+		operator.email = operator.email.trim().toLowerCase()
 
 
 		def exists = emailExists(operator.email)
@@ -60,7 +60,7 @@ class OperatorService {
 	}
 
 	def Operator emailExists(String email) {
-		return server.find(Operator.class).where().eq("email", email).findUnique()
+		return server.find(Operator.class).where().ieq("email", email).findUnique()
 	}
 
 	def validateEmail(String email) {

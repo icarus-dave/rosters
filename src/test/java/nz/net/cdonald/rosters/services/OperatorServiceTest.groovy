@@ -98,14 +98,15 @@ class OperatorServiceTest extends Assert {
 		def o1 = new Operator()
 		o1.firstName = "abc"
 		o1.lastName = "def"
-		o1.email = "foo@baz.com"
+		o1.email = "foo@baz.COM"
 
 		operatorService.createOperator(o1)
+		assertEquals("foo@baz.com",o1.email)
 
 		def o2 = new Operator()
 		o2.firstName = "abc"
 		o2.lastName = "def"
-		o2.email = "foo@baz.com"
+		o2.email = "foo@BAZ.com"
 		def ex
 		try {
 			operatorService.createOperator(o2)
@@ -116,10 +117,11 @@ class OperatorServiceTest extends Assert {
 
 		o2.firstName = "abc"
 		o2.lastName = "def"
-		o2.email = "baz@foo.com"
+		o2.email = "baz@FOO.com"
 		operatorService.createOperator(o2)
+		assertEquals("baz@foo.com",o2.email)
 
-		o2.email = "foo@baz.com"
+		o2.email = "foo@BAZ.com"
 		def ex2
 		try {
 			operatorService.updateOperator(o2)

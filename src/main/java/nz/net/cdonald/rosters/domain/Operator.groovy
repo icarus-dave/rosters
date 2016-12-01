@@ -23,4 +23,5 @@ public class Operator extends BaseModel {
 
 	@OneToMany(mappedBy = "operator")
 	List<TeamMembers> teams;
+
 }
