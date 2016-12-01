@@ -37,8 +37,8 @@ class OperatorController {
 	public ResponseEntity updateOperator(@RequestBody Operator operator, @PathVariable long id) {
 		if (operator.id == null || id != operator.id) return new ResponseEntity(
 				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id and path id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
-
-		return new ResponseEntity(operatorService.updateOperator(operator), HttpStatus.OK)
+		def o = operatorService.updateOperator(operator)
+		return new ResponseEntity(o, HttpStatus.OK)
 	}
 
 }

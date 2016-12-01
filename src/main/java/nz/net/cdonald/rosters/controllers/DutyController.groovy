@@ -37,8 +37,18 @@ class DutyController {
 
 	}
 
-	@RequestMapping(value = "/{id}/unstanddown", method = RequestMethod.POST)
-	public void unstandDown(@PathVariable String id, @RequestParam long operatorId) {
+	@RequestMapping(value = "/{id}/standdown", method = RequestMethod.DELETE)
+	public void deleteStandDown(@PathVariable String id, @RequestParam long operatorId) {
+
+	}
+
+	@RequestMapping(value = "/{id}/replacement", method = RequestMethod.POST)
+	public void replacement(@PathVariable String id, @RequestParam long operatorId) {
+
+	}
+
+	@RequestMapping(value = "/{id}/replacement", method = RequestMethod.DELETE)
+	public void deleteReplacement(@PathVariable String id, @RequestParam long operatorId) {
 
 	}
 

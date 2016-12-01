@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
+import javax.persistence.OptimisticLockException
 import javax.servlet.http.HttpServletRequest
 
 @ControllerAdvice
@@ -21,5 +22,11 @@ class ErrorControllerAdvice {
 	public ResponseEntity handleUnsupportedMethod(HttpServletRequest request) throws IOException {
 		def res = new ErrorResponse(HttpStatus.METHOD_NOT_ALLOWED.value(), "Request method ${request.method} not supported for path ${request.servletPath}")
 		return new ResponseEntity(res, HttpStatus.METHOD_NOT_ALLOWED)
+	}
+
+	@ExceptionHandler(OptimisticLockException.class)
+	public ResponseEntity handleOptimisticLockException(HttpServletRequest request) throws IOException {
+		def res = new ErrorResponse(HttpStatus.CONFLICT.value(), "Conflict in updating object. Try GETing again and then updating")
+		return new ResponseEntity(res, HttpStatus.CONFLICT)
 	}
 }
