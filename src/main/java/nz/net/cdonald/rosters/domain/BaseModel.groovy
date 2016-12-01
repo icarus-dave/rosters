@@ -1,9 +1,9 @@
 package nz.net.cdonald.rosters.domain
 
 import com.avaje.ebean.Model
-import com.avaje.ebean.annotation.JsonIgnore
 import com.avaje.ebean.annotation.WhenCreated
 import com.avaje.ebean.annotation.WhenModified
+import com.fasterxml.jackson.annotation.JsonIgnore
 import groovy.transform.CompileStatic
 
 import javax.persistence.*
@@ -18,7 +18,6 @@ public class BaseModel extends Model {
 	Long id;
 
 	@Version
-	@JsonIgnore
 	Long version;
 
 	@WhenCreated
