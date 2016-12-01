@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 
+import javax.persistence.OptimisticLockException
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class OperatorServiceTest extends Assert {
@@ -88,6 +90,7 @@ class OperatorServiceTest extends Assert {
 		def o2 = operatorService.updateOperator(o1)
 
 		assertEquals("zyx", o2.firstName)
+		assertEquals(2,o2.version)
 	}
 
 	@Test
@@ -148,6 +151,93 @@ class OperatorServiceTest extends Assert {
 		operatorService.updateOperator(o1)
 
 		assertEquals("abc", server.find(Operator.class).where().eq("email", "baz@foo.org").findUnique().firstName)
+	}
+
+	@Test
+	public void testUpdatedVersionNumber() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.com"
+
+		operatorService.createOperator(o1)
+
+		def o2 = new Operator()
+		o2.id = o1.id
+		o2.firstName = "def"
+		o2.lastName = "abc"
+		o2.version = 55
+		o2.email = "foo@baz.com"
+
+		def ex
+		try {
+			operatorService.updateOperator(o2)
+		} catch (OptimisticLockException e) {
+			ex = e
+		}
+
+		assertNotNull(ex)
+	}
+
+	@Test
+	public void invalidEmail() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "invalid"
+
+		def ex
+		try {
+			operatorService.createOperator(o1)
+		} catch (IllegalArgumentException e) {
+			ex = e
+		}
+
+		assertNotNull(ex)
+
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		o1.email = "invalid"
+		def e2
+		try {
+			operatorService.updateOperator(o1)
+		} catch (IllegalArgumentException e) {
+			e2 = e
+		}
+
+		assertNotNull(e2)
+
+	}
+
+	@Test
+	public void invalidNoEmail() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+
+		def ex
+		try {
+			operatorService.createOperator(o1)
+		} catch (IllegalArgumentException e) {
+			ex = e
+		}
+
+		assertNotNull(ex)
+
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		o1.email = null
+		def e2
+		try {
+			operatorService.updateOperator(o1)
+		} catch (IllegalArgumentException e) {
+			e2 = e
+		}
+
+		assertNotNull(e2)
+
 	}
 }
 
