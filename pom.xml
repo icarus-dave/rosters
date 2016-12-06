@@ -144,6 +144,16 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <addResources>true</addResources>
+                    <useTestClasspath>true</useTestClasspath>
+                    <folders>
+                        <folder>src/test/resources</folder>
+                    </folders>
+                    <profiles>
+                        <profile>local</profile>
+                    </profiles>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
