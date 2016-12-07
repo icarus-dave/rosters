@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/team")
+@RequestMapping("/api/team")
 class TeamController {
 
 	@Autowired
