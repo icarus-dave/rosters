@@ -1,0 +1,24 @@
+<div class="mt-1">
+  <h2>Operators</h2>
+</div>
+<div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+  <strong>Uh oh</strong> we weren't able to do that: {{errorMessage}}
+</div>
+<table class="table table-striped">
+  <thead class="thead">
+    <tr>
+      <th>Last Name</th>
+      <th>First Name</th>
+      <th>Email</th>
+      <th>Active</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let operator of operators">
+      <td>{{ operator.lastName }}</td>
+      <td>{{ operator.firstName }}</td>
+      <td><a href="mailto:{{operator.email}}">{{ operator.email }}</a></td>
+      <td>{{ operator.active ? 'Yes' : 'No' }}</td>
+    </tr>
+  </tbody>
+</table>
