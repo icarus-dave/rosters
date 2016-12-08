@@ -169,6 +169,11 @@
                             <targetPath>.ebextensions</targetPath>
                             <filtering>true</filtering>
                         </resource>
+                        <resource>
+                            <directory>dbmigration</directory>
+                            <targetPath>dbmigration</targetPath>
+                            <filtering>true</filtering>
+                        </resource>
                     </webResources>
                 </configuration>
             </plugin>
