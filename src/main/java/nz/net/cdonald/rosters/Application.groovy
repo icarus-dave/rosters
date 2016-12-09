@@ -24,17 +24,17 @@ public class Application {
 
 		if (cmdArgs.containsProperty("generateDB")) {
 			//Generate new database schema with command:
-			//mvn spring-boot:run -Drun.arguments="--generateDB,--version=3"
+			//mvn spring-boot:run -Drun.arguments="--generateDB,--version=1"
 			if (!cmdArgs.containsProperty("version"))
 				throw new IllegalArgumentException("Version not specified, usage: --generateDB --version=1")
 
 			def version = cmdArgs.getProperty("version");
 
 			ServerConfig config = new ServerConfig()
-			config.setName("pg")
+			config.setName("db")
 			config.setDefaultServer(true)
 			config.getDataSourceConfig().setOffline(true)
-			config.setDatabasePlatformName("postgres")
+			config.setDatabasePlatformName("h2")
 			config.addPackage("nz.net.cdonald.rosters.domain")
 			EbeanServer server = EbeanServerFactory.create(config)
 
@@ -43,7 +43,7 @@ public class Application {
 			System.setProperty("ddl.migration.name", "rosters")
 			DbMigration dbMigration = new DbMigration()
 			dbMigration.setPathToResources(".")
-			dbMigration.setPlatform(Platform.POSTGRES)
+			dbMigration.setPlatform(Platform.H2)
 			dbMigration.generateMigration()
 
 			return
@@ -58,16 +58,14 @@ public class Application {
 		ServerConfig config = new ServerConfig();
 
 		config.setName("db");
-		config.loadFromProperties();
+		config.loadFromProperties()
 		//doesn't seem to pick up packages...
 		config.addPackage("nz.net.cdonald.rosters.domain")
-		config.setDefaultServer(true);
-
-		ebeanServerFactoryBean.setServerConfig(config);
-		return ebeanServerFactoryBean;
+		config.setDefaultServer(true)
+		ebeanServerFactoryBean.setServerConfig(config)
+		return ebeanServerFactoryBean
 	}
 }
-
 
 @Configuration
 @Profile("local")
@@ -78,7 +76,7 @@ public class LocalDevConfiguration {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				//Let us hack on the front end without security errors
-				registry.addMapping("/**");
+				registry.addMapping("/**")
 			}
 		};
 	}
