@@ -23,13 +23,13 @@ class WebConfigController {
 	@RequestMapping
 	public Map<String, String> config() {
 		def webConfig = [:]
-		(environment as AbstractEnvironment).getPropertySources().each { ps ->
-			if (!(ps instanceof MapPropertySource)) return
-			if (!(ps.getSource() instanceof Map)) return
-			ps.getSource().each { k,v ->
-				if (k.startsWith("frontend.")) webConfig.put(k - "frontend.",environment.getProperty(k) as String)
-			}
-		}
+		(environment as AbstractEnvironment).getPropertySources()
+				.findAll { it instanceof MapPropertySource && it.getSource() instanceof Map }
+				.each { ps ->
+					ps.getSource().each { k,v ->
+						if (k.startsWith("frontend.")) webConfig.put(k - "frontend.",environment.getProperty(k) as String)
+					}
+				}
 		return webConfig
 	}
 
