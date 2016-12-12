@@ -32,7 +32,7 @@ export class OperatorService {
   private handleError(error: any): Promise<any> {
     let errMsg = (error.message) ? error.message :
         error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-    console.error(errMsg);
+    console.log(errMsg);
     return Promise.reject(errMsg);
   }
 
