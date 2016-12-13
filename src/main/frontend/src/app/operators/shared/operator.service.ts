@@ -17,7 +17,7 @@ export class OperatorService {
   getOperators(): Promise<Operator[]> {
     return this.http.get(this.operatorsUrl)
                .toPromise()
-               .then(response => ((response.json().data || []) as Operator[]).sort(Operator.compare))
+               .then(response => ((response.json().data || []) as Operator[]).sort(Operator.compare) )
                .catch(this.handleError);
   }
 

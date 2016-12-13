@@ -5,5 +5,6 @@
 
 export const environment = {
   production: false,
-  backendUrl: '/app'
+  backendUrl: '/app',
+  mockData: true
 };

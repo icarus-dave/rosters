@@ -5,8 +5,6 @@ import { Operator } from './shared/operator.model';
 import { OperatorService } from './shared/operator.service';
 import { Router }     from '@angular/router';
 
-import { WebConfigService } from '../webconfig/webconfig.service';
-
 @Component({
   selector: 'operators',
   templateUrl: 'operators.component.html',

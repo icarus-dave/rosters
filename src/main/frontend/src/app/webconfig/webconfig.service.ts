@@ -4,8 +4,6 @@ import { Headers, Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { environment } from '../../environments/environment';
-import { InMemoryWebApiModule } from 'angular-in-memory-web-api';
-import { InMemoryDataService }  from '../in-memory-data-service';
 
 @Injectable()
 export class WebConfigService {
@@ -23,7 +21,7 @@ export class WebConfigService {
  load(): Promise<any> {
     return this.http.get(this.webconfigUrl)
                .toPromise()
-               .then(response => this.config = response.json().data[0])
+               .then(response => this.config = response.json())
                .catch(this.handleError);
   }
 
