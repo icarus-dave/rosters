@@ -196,7 +196,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <!--<plugin>
+            <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>${frontend.maven.version}</version>
@@ -220,7 +220,7 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <arguments>install -&-only=production</arguments>
+                            <arguments>install --only=production</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -230,7 +230,7 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <arguments>install -&-no-optional -g angular-cli</arguments>
+                            <arguments>install --no-optional -g angular-cli</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -244,7 +244,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 </project>
