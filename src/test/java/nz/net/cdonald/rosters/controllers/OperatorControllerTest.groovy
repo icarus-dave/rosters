@@ -25,7 +25,7 @@ class OperatorControllerTest extends MorcTestBuilder {
 		def operatorEndpoint = "http://localhost:8080/api/operator"
 
 		syncTest("Test of Empty List", operatorEndpoint)
-				.expectation(regex("\\[\\]"), headers(header(Exchange.CONTENT_TYPE, "application/json;charset=UTF-8")))
+				.expectation(json('{"data":[]}'), headers(header(Exchange.CONTENT_TYPE, "application/json;charset=UTF-8")))
 
 		Operator o1 = new Operator()
 		o1.firstName = "abc"
@@ -36,13 +36,13 @@ class OperatorControllerTest extends MorcTestBuilder {
 		syncTest("Test of Populated List", operatorEndpoint)
 				.request(process { server.save(generateOperator()) })
 				.expectation(headers(header(Exchange.CONTENT_TYPE, "application/json;charset=UTF-8")),
-					jsonpath(".[?(@.firstName == 'abc')]"),
-					jsonpath(".[?(@.lastName == 'zyx')]"), jsonpath(".[?(@.email == 'foo@baz.com')]"))
+					jsonpath(".data.[?(@.firstName == 'abc')]"),
+					jsonpath(".data.[?(@.lastName == 'zyx')]"), jsonpath(".data.[?(@.email == 'foo@baz.com')]"))
 			.addPart(operatorEndpoint)
 				.request(process { server.save(generateOperator("zyx", "abc", "baz@foo.com")) })
-				.expectation(predicate { new JsonPathExpression("\$.length()").evaluate(it) == 2 },
-					jsonpath(".[?(@.firstName == 'abc')]"), jsonpath(".[?(@.lastName == 'zyx')]"), jsonpath(".[?(@.email == 'foo@baz.com')]"),
-					jsonpath(".[?(@.firstName == 'zyx')]"), jsonpath(".[?(@.lastName == 'abc')]"), jsonpath(".[?(@.email == 'baz@foo.com')]"))
+				.expectation(predicate { new JsonPathExpression("\$.data.length()").evaluate(it) == 2 },
+					jsonpath(".data.[?(@.firstName == 'abc')]"), jsonpath(".data.[?(@.lastName == 'zyx')]"), jsonpath(".data.[?(@.email == 'foo@baz.com')]"),
+					jsonpath(".data.[?(@.firstName == 'zyx')]"), jsonpath(".data.[?(@.lastName == 'abc')]"), jsonpath(".data.[?(@.email == 'baz@foo.com')]"))
 
 		def o = generateOperator("1", "2", "1@2.com")
 
@@ -71,8 +71,7 @@ class OperatorControllerTest extends MorcTestBuilder {
 				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${i}") })
 				.expectation(jsonpath(".[?(@.lastName == 'nnn')]"), jsonpath(".[?(@.active == true)]"),jsonpath(".[?(@.version == 1)]"))
 			.addPart(operatorEndpoint)
-				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${i}") },
-				headers(header(Exchange.HTTP_METHOD, PUT())), process { json('{ "id": ' + i + ', "firstName":"nnn","lastName":"rrr","email":"abde@asdd.com","active":false,"version":1 }').process(it) })
+				.request(headers(header(Exchange.HTTP_METHOD, PUT())), process { json('{ "id": ' + i + ', "firstName":"nnn","lastName":"rrr","email":"abde@asdd.com","active":false,"version":1 }').process(it) })
 				.expectation(jsonpath(".[?(@.firstName == 'nnn')]"), jsonpath(".[?(@.lastName == 'rrr')]"),
 				jsonpath(".[?(@.version == 2)]"),jsonpath(".[?(@.email == 'abde@asdd.com')]"), jsonpath(".[?(@.active == false)]"))
 
@@ -86,15 +85,14 @@ class OperatorControllerTest extends MorcTestBuilder {
 				headers(header(Exchange.CONTENT_TYPE, "application/json;charset=UTF-8")))
 
 
-		syncTest("Update operator not known", "$operatorEndpoint/12345")
+		syncTest("Update operator not known", "$operatorEndpoint")
 				.request(headers(header(Exchange.HTTP_METHOD, PUT())))
 				.expectsException()
 				.expectation(httpStatusCode(400))
 
 
-		syncTest("Update operator mismatch", operatorEndpoint)
-				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${i}") },
-				headers(header(Exchange.HTTP_METHOD, PUT())), json('{ "id":"123","firstName":"nnn","lastName":"rrr","email":"abde@asdd.com" }'))
+		syncTest("Update operator not specified", operatorEndpoint)
+				.request(headers(header(Exchange.HTTP_METHOD, PUT())), json('{ "firstName":"nnn","lastName":"rrr","email":"abde@asdd.com" }'))
 				.expectsException()
 				.expectation(httpStatusCode(400))
 
@@ -122,7 +120,7 @@ class OperatorControllerTest extends MorcTestBuilder {
 				.request(headers(header(Exchange.HTTP_METHOD, POST())), json('{ "firstName":"rrr","lastName":"nnn","email":"test@test.com" }'))
 				.expectation(jsonpath(".[?(@.version == 1)]"),predicate { j = new JsonPathExpression("@.id").evaluate(it); j instanceof Integer })
 			.addPart(operatorEndpoint)
-				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${j}") }, headers(header(Exchange.HTTP_METHOD, PUT())),
+				.request(headers(header(Exchange.HTTP_METHOD, PUT())),
 					process { json('{ "id": ' + j + ', "firstName":"nnn","lastName":"rrr","email":"test@test.com","active":false,"version":9999 }').process(it) })
 				.expectsException()
 				.expectation(httpStatusCode(409))

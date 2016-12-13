@@ -1,6 +1,7 @@
 package nz.net.cdonald.rosters.controllers
 
 import nz.net.cdonald.rosters.domain.Operator
+import nz.net.cdonald.rosters.domain.WrappedList
 import nz.net.cdonald.rosters.services.OperatorService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -16,8 +17,9 @@ class OperatorController {
 	OperatorService operatorService
 
 	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
-	public List<Operator> list() {
-		return operatorService.getOperators()
+	public WrappedList<Operator> list() {
+		//wrapped to avoid the security issue around unwrapped arrays
+		return new WrappedList<Operator>(operatorService.getOperators())
 	}
 
 	@RequestMapping("/{id}")
@@ -33,10 +35,10 @@ class OperatorController {
 		return operatorService.createOperator(operator)
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	public ResponseEntity updateOperator(@RequestBody Operator operator, @PathVariable long id) {
-		if (operator.id == null || id != operator.id) return new ResponseEntity(
-				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id and path id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
+	@RequestMapping(method = RequestMethod.PUT)
+	public ResponseEntity updateOperator(@RequestBody Operator operator) {
+		if (operator.id == null) return new ResponseEntity(
+				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id required for update"), HttpStatus.BAD_REQUEST)
 		def o = operatorService.updateOperator(operator)
 		return new ResponseEntity(o, HttpStatus.OK)
 	}
