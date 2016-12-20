@@ -77,6 +77,7 @@ public class LocalDevConfiguration {
 			public void addCorsMappings(CorsRegistry registry) {
 				//Let us hack on the front end without security errors
 				registry.addMapping("/**")
+					.allowedMethods("*")
 			}
 		};
 	}
