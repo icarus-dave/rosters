@@ -71,7 +71,8 @@ class OperatorControllerTest extends MorcTestBuilder {
 				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${i}") })
 				.expectation(jsonpath(".[?(@.lastName == 'nnn')]"), jsonpath(".[?(@.active == true)]"),jsonpath(".[?(@.version == 1)]"))
 			.addPart(operatorEndpoint)
-				.request(headers(header(Exchange.HTTP_METHOD, PUT())), process { json('{ "id": ' + i + ', "firstName":"nnn","lastName":"rrr","email":"abde@asdd.com","active":false,"version":1 }').process(it) })
+				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${i}") },
+				headers(header(Exchange.HTTP_METHOD, PUT())), process { json('{ "id": ' + i + ', "firstName":"nnn","lastName":"rrr","email":"abde@asdd.com","active":false,"version":1 }').process(it) })
 				.expectation(jsonpath(".[?(@.firstName == 'nnn')]"), jsonpath(".[?(@.lastName == 'rrr')]"),
 				jsonpath(".[?(@.version == 2)]"),jsonpath(".[?(@.email == 'abde@asdd.com')]"), jsonpath(".[?(@.active == false)]"))
 
@@ -85,17 +86,16 @@ class OperatorControllerTest extends MorcTestBuilder {
 				headers(header(Exchange.CONTENT_TYPE, "application/json;charset=UTF-8")))
 
 
-		syncTest("Update operator not known", "$operatorEndpoint")
+		syncTest("Update operator not known", "$operatorEndpoint/12345")
 				.request(headers(header(Exchange.HTTP_METHOD, PUT())))
 				.expectsException()
 				.expectation(httpStatusCode(400))
 
-
-		syncTest("Update operator not specified", operatorEndpoint)
-				.request(headers(header(Exchange.HTTP_METHOD, PUT())), json('{ "firstName":"nnn","lastName":"rrr","email":"abde@asdd.com" }'))
+		syncTest("Update operator mismatch", operatorEndpoint)
+				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${i}") },
+				headers(header(Exchange.HTTP_METHOD, PUT())), json('{ "id":"123","firstName":"nnn","lastName":"rrr","email":"abde@asdd.com" }'))
 				.expectsException()
 				.expectation(httpStatusCode(400))
-
 
 		syncTest("Existing email create fail", operatorEndpoint)
 				.request(headers(header(Exchange.HTTP_METHOD, POST())), json('{ "firstName":"rrr","lastName":"nnn","email":"abde@asdd.com" }'))
@@ -120,8 +120,8 @@ class OperatorControllerTest extends MorcTestBuilder {
 				.request(headers(header(Exchange.HTTP_METHOD, POST())), json('{ "firstName":"rrr","lastName":"nnn","email":"test@test.com" }'))
 				.expectation(jsonpath(".[?(@.version == 1)]"),predicate { j = new JsonPathExpression("@.id").evaluate(it); j instanceof Integer })
 			.addPart(operatorEndpoint)
-				.request(headers(header(Exchange.HTTP_METHOD, PUT())),
-					process { json('{ "id": ' + j + ', "firstName":"nnn","lastName":"rrr","email":"test@test.com","active":false,"version":9999 }').process(it) })
+				.request(process { it.getIn().setHeader(Exchange.HTTP_PATH, "/${j}") }, headers(header(Exchange.HTTP_METHOD, PUT())),
+				process { json('{ "id": ' + j + ', "firstName":"nnn","lastName":"rrr","email":"test@test.com","active":false,"version":9999 }').process(it) })
 				.expectsException()
 				.expectation(httpStatusCode(409))
 

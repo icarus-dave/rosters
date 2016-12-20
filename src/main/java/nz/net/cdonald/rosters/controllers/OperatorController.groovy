@@ -35,10 +35,10 @@ class OperatorController {
 		return operatorService.createOperator(operator)
 	}
 
-	@RequestMapping(method = RequestMethod.PUT)
-	public ResponseEntity updateOperator(@RequestBody Operator operator) {
-		if (operator.id == null) return new ResponseEntity(
-				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id required for update"), HttpStatus.BAD_REQUEST)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	public ResponseEntity updateOperator(@RequestBody Operator operator, @PathVariable long id) {
+		if (operator.id == null || id != operator.id) return new ResponseEntity(
+				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id and path id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
 		def o = operatorService.updateOperator(operator)
 		return new ResponseEntity(o, HttpStatus.OK)
 	}
