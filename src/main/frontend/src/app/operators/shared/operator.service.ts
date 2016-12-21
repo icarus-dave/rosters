@@ -30,9 +30,10 @@ export class OperatorService {
   }
 
   private handleError(error: any): Promise<any> {
-    let errMsg = (error.message) ? error.message :
+    let errMsg: string;
+    if (error.json() != null) errMsg = `${error.json().code} - ${error.json().message}`
+    else errMsg = (error.message) ? error.message :
         error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-    console.log(errMsg);
     return Promise.reject(errMsg);
   }
 
@@ -41,15 +42,15 @@ export class OperatorService {
     return this.http
       .put(url, JSON.stringify(operator), {headers: this.headers})
       .toPromise()
-      .then(() => operator)
+      .then(res => res.json())
       .catch(this.handleError);
   }
 
-  create(operator: string): Promise<Operator> {
+  create(operator: Operator): Promise<Operator> {
     return this.http
       .post(this.operatorsUrl, JSON.stringify(operator), {headers: this.headers})
       .toPromise()
-      .then(res => res.json().data)
+      .then(res => res.json())
       .catch(this.handleError);
   }
 

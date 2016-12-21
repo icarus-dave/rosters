@@ -1,9 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-
+import { ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
@@ -11,6 +9,7 @@ import { AppComponent } from './app.component';
 import { AppHttpModule } from './AppHttpModule';
 import { WebConfigService } from './webconfig/webconfig.service';
 import { OperatorsComponent } from './operators/operators.component';
+import { OperatorFormComponent } from './operators/operator-form.component';
 import { OperatorService } from './operators/shared/operator.service';
 
 export function init_app(webConfig: WebConfigService){
@@ -20,14 +19,18 @@ export function init_app(webConfig: WebConfigService){
 @NgModule({
   declarations: [
     AppComponent,
-    OperatorsComponent
+    OperatorsComponent,
+    OperatorFormComponent
   ],
   imports: [
     BrowserModule,
-    FormsModule,
+    ReactiveFormsModule,
     AppHttpModule,
     AppRoutingModule,
     NgbModule.forRoot()
+  ],
+  entryComponents: [
+    OperatorFormComponent
   ],
   providers: [OperatorService,
     WebConfigService,

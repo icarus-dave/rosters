@@ -1,7 +1,13 @@
-<div class="mt-1">
-  <h2>Operators</h2>
+<template ngbModalContainer></template>
+<div class="row">
+  <div class="mt-1 col-md-6">
+    <h2>Operators</h2>
+  </div>
+  <div class="col-md-6 mt-1">
+    <button class="btn btn-primary float-xs-right" (click)="open()">Create Operator</button>
+  </div>
 </div>
-<div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+<div id="error-message" *ngIf="errorMessage" class="alert alert-danger" role="alert">
   <strong>Uh oh...</strong> we weren't able to do that: {{errorMessage}}
 </div>
 <table class="table table-striped">
@@ -11,14 +17,16 @@
       <th>First Name</th>
       <th>Email</th>
       <th>Active</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let operator of operators">
-      <td>{{ operator.lastName }}</td>
-      <td>{{ operator.firstName }}</td>
-      <td><a href="mailto:{{operator.email}}">{{ operator.email }}</a></td>
-      <td>{{ operator.active ? 'Yes' : 'No' }}</td>
+    <tr id="op-rows" *ngFor="let operator of operators">
+      <td id="first-name">{{ operator.lastName }}</td>
+      <td id="last-name">{{ operator.firstName }}</td>
+      <td id="email"><a href="mailto:{{operator.email}}">{{ operator.email }}</a></td>
+      <td id="active">{{ operator.active ? 'Yes' : 'No' }}</td>
+      <td id="edit"><button class="btn btn-info" (click)="open(operator)">Edit</button></td>
     </tr>
   </tbody>
 </table>
