@@ -32,7 +32,8 @@ export function init_app(webConfig: WebConfigService){
   entryComponents: [
     OperatorFormComponent
   ],
-  providers: [OperatorService,
+  providers: [
+    OperatorService,
     WebConfigService,
     {
       provide: APP_INITIALIZER,

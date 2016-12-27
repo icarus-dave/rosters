@@ -1,4 +1,6 @@
-import { InMemoryDbService } from 'angular-in-memory-web-api';
+import { InMemoryDbService, RequestInfo,  } from 'angular-in-memory-web-api';
+import { ResponseOptions, RequestMethod } from '@angular/http';
+
 export class InMemoryDataService implements InMemoryDbService {
   public static getOperators() { return [
     {id: 11, firstName: 'Foo', lastName: 'Baz',email:'foo@baz.com',active:true},
@@ -18,5 +20,21 @@ export class InMemoryDataService implements InMemoryDbService {
     var operator = InMemoryDataService.getOperators();
     var webconfig = InMemoryDataService.getWebConfig();
     return {operator,webconfig};
+  };
+
+  //unwrap the data element that the library adds, we leave arrays as is because of the security
+  //issue re: unwrapped arrays and certain browsers
+  responseInterceptor(res: ResponseOptions, ri: RequestInfo) : ResponseOptions {
+    if (ri.req.method == RequestMethod.Put && res.status >= 200 && res.status < 300) {
+      //by default the implementation returns an empty body for PUT, if we assume 
+      //the update sets the resource correctly then returning the request is sufficient
+      res.body = ri.req.getBody();
+      return res;
+    }
+
+    if (res.body != null && res.status >= 200 && res.status < 300 && (res.body as any).data && !Array.isArray((res.body as any).data)) {
+      res.body = (res.body as any).data;
+    }
+    return res;
   };
 }

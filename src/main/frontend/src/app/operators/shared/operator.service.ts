@@ -17,7 +17,9 @@ export class OperatorService {
   getOperators(): Promise<Operator[]> {
     return this.http.get(this.operatorsUrl)
                .toPromise()
-               .then(response => ((response.json().data || []) as Operator[]).sort(Operator.compare) )
+               .then(response => { 
+               return ((response.json().data || []) as Operator[]).sort(Operator.compare) 
+               })
                .catch(this.handleError);
   }
 
@@ -25,13 +27,14 @@ export class OperatorService {
     const url = `${this.operatorsUrl}/${id}`;
     return this.http.get(url)
       .toPromise()
-      .then(response => response.json().data as Operator)
+      .then(response => response.json() as Operator)
       .catch(this.handleError);
   }
 
   private handleError(error: any): Promise<any> {
     let errMsg: string;
-    if (error.json() != null) errMsg = `${error.json().code} - ${error.json().message}`
+    if (error.json() != null && error.json().error) errMsg = error.json().error
+    else if (error.json() != null) errMsg = `${error.json().code} - ${error.json().message}`
     else errMsg = (error.message) ? error.message :
         error.status ? `${error.status} - ${error.statusText}` : 'Server error';
     return Promise.reject(errMsg);
@@ -42,7 +45,7 @@ export class OperatorService {
     return this.http
       .put(url, JSON.stringify(operator), {headers: this.headers})
       .toPromise()
-      .then(res => res.json())
+      .then(res => res.json() as Operator)
       .catch(this.handleError);
   }
 
@@ -50,7 +53,7 @@ export class OperatorService {
     return this.http
       .post(this.operatorsUrl, JSON.stringify(operator), {headers: this.headers})
       .toPromise()
-      .then(res => res.json())
+      .then(res => res.json() as Operator)
       .catch(this.handleError);
   }
 
