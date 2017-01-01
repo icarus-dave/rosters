@@ -18,8 +18,10 @@ class OperatorControllerTest extends MorcTestBuilder {
 	private static ConfigurableApplicationContext context;
 
 	public void configure() {
+		def app = new SpringApplication(Application.class)
+		app.setAdditionalProfiles("noauth")
+		context = app.run()
 
-		context = SpringApplication.run(Application.class);
 		def server = context.getBean(EbeanServer.class)
 
 		def operatorEndpoint = "http://localhost:8080/api/operator"
@@ -31,7 +33,6 @@ class OperatorControllerTest extends MorcTestBuilder {
 		o1.firstName = "abc"
 		o1.lastName = "zyx"
 		o1.email = "foo@baz.com"
-
 
 		syncTest("Test of Populated List", operatorEndpoint)
 				.request(process { server.save(generateOperator()) })

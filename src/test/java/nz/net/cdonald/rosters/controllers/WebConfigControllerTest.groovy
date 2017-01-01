@@ -15,7 +15,9 @@ class WebConfigControllerTest extends MorcTestBuilder {
 
 	public void configure() {
 
-		context = SpringApplication.run(Application.class);
+		def app = new SpringApplication(Application.class)
+		app.setAdditionalProfiles("noauth")
+		context = app.run()
 
 		def configEndpoint = "http://localhost:8080/api/webconfig"
 
