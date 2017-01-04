@@ -4,6 +4,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppRoutingModule } from './app-routing.module';
 
+import { AUTH_PROVIDERS }      from 'angular2-jwt';
+
 import { AppComponent } from './app.component';
 
 import { AppHttpModule } from './AppHttpModule';
@@ -40,7 +42,9 @@ export function init_app(webConfig: WebConfigService){
       useFactory: init_app,
       deps: [WebConfigService],
       multi:true
-    }],
+    },
+    AUTH_PROVIDERS
+    ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

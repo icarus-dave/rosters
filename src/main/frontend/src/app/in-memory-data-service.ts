@@ -13,7 +13,9 @@ export class InMemoryDataService implements InMemoryDbService {
 
   public static getWebConfig() {
     return {"foo":"baz",
-            "baz":"foo"}
+            "baz":"foo",
+            "auth.domain":"rosters.au.auth0.com",
+            "auth.clientId":"YqDaq9tzPWsyhsfCzHFQqNWHdcl2X8dH"}
   };
 
   createDb() {

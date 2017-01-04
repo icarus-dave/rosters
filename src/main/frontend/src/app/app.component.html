@@ -18,6 +18,12 @@
         <li class="nav-item">
           <a class="nav-link" href="#">Teams</a>
         </li>
+        <li class="nav-item">
+           <button class="btn btn-primary btn-margin" (click)="auth.login()" *ngIf="!auth.authenticated()">Log In</button>
+        </li>
+        <li class="nav-item">
+           <button class="btn btn-primary btn-margin" (click)="auth.logout()" *ngIf="auth.authenticated()">Log Out</button>
+        </li>
       </ul>
     </div>
   </nav>

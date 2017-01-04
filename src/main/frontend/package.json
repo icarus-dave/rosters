@@ -27,7 +27,9 @@
     "zone.js": "^0.7.4",
     "angular-in-memory-web-api": "~0.2.2",
     "bootstrap":"4.0.0-alpha.5",
-    "@ng-bootstrap/ng-bootstrap":"v1.0.0-alpha.15"
+    "@ng-bootstrap/ng-bootstrap":"v1.0.0-alpha.15",
+    "auth0-lock":"10.7.3",
+    "angular2-jwt":"0.1.27"
   },
   "devDependencies": {
     "@angular/compiler-cli": "2.4.0",
