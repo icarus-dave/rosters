@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.InsufficientAuthenticationException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -38,6 +40,13 @@ class ErrorControllerAdvice {
 
 	@ExceptionHandler(PersistenceException.class)
 	public ResponseEntity handlePersistenceException(Exception e) throws IOException {
+		def res = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Server error working with database")
+		logger.error("Returning 500 to user", e)
+		return new ResponseEntity(res, HttpStatus.INTERNAL_SERVER_ERROR)
+	}
+
+	@ExceptionHandler(InsufficientAuthenticationException.class)
+	public ResponseEntity InsufficientAuthenticationException(Exception e) throws IOException {
 		def res = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Server error working with database")
 		logger.error("Returning 500 to user", e)
 		return new ResponseEntity(res, HttpStatus.INTERNAL_SERVER_ERROR)

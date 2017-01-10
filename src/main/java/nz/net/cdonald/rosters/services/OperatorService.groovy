@@ -33,7 +33,7 @@ class OperatorService {
 		if (!validateEmail(operator.email)) throw new IllegalArgumentException("Email invalid")
 
 		//provide a nicer exception than would otherwise be thrown (and also case insensitive)
-		if (emailExists(operator.email)) throw new IllegalArgumentException("Email already in use")
+		if (findByEmail(operator.email)) throw new IllegalArgumentException("Email already in use")
 
 		operator.id = null
 		operator.email = operator.email.trim().toLowerCase()
@@ -48,8 +48,7 @@ class OperatorService {
 
 		operator.email = operator.email.trim().toLowerCase()
 
-
-		def exists = emailExists(operator.email)
+		def exists = findByEmail(operator.email)
 
 		//provide a nicer exception than would otherwise be thrown
 		if (exists && exists.id != operator.id) throw new IllegalArgumentException("Email already in use")
@@ -59,7 +58,7 @@ class OperatorService {
 		return getOperator(operator.id)
 	}
 
-	def Operator emailExists(String email) {
+	def Operator findByEmail(String email) {
 		return server.find(Operator.class).where().ieq("email", email).findUnique()
 	}
 

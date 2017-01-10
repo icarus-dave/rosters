@@ -7,18 +7,34 @@ import com.avaje.ebean.config.Platform
 import com.avaje.ebean.config.ServerConfig
 import com.avaje.ebean.dbmigration.DbMigration
 import com.avaje.ebean.springsupport.factory.EbeanServerFactoryBean
+import nz.net.cdonald.rosters.components.AuthenticationExceptionEntryPoint
+import nz.net.cdonald.rosters.components.InviteAuthnComponent
+import nz.net.cdonald.rosters.services.Auth0Service
+import nz.net.cdonald.rosters.services.OperatorService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.security.SecurityProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.core.annotation.Order
 import org.springframework.core.env.SimpleCommandLinePropertySource
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.InsufficientAuthenticationException
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.web.AuthenticationEntryPoint
+import org.springframework.security.web.util.matcher.RequestMatcher
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
@@ -31,6 +47,7 @@ public class Application {
 		if (cmdArgs.containsProperty("generateDB")) {
 			//Generate new database schema with command:
 			//mvn spring-boot:run -Drun.arguments="--generateDB,--version=1"
+			//the generated files will be placed in ./dbmigration which will then be bundled into the WAR (as specified in pom.xml)
 			if (!cmdArgs.containsProperty("version"))
 				throw new IllegalArgumentException("Version not specified, usage: --generateDB --version=1")
 
@@ -100,6 +117,8 @@ mvn spring-boot:run -Drun.arguments=local
 */
 @EnableWebSecurity
 @Configuration
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 @Profile("!noauth") //double negative!
 public class AuthConfig extends WebSecurityConfigurerAdapter {
 
@@ -112,23 +131,33 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 	@Value('${jwt.secret}')
 	String secret
 
+	@Autowired
+	InviteAuthnComponent inviteAuthnComponent
+
+	@Autowired
+	AuthenticationExceptionEntryPoint authenticationExceptionEntryPoint
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		JwtWebSecurityConfigurer
-				.forHS256(audience, issuer, secret.getBytes())
+				.forHS256(audience, issuer, inviteAuthnComponent)
 				.configure(http)
-				.authorizeRequests()
-					.antMatchers("/api/**").fullyAuthenticated();
+					.exceptionHandling()
+					.authenticationEntryPoint(authenticationExceptionEntryPoint).and()
+				.authorizeRequests().antMatchers("/api/**").fullyAuthenticated();
 	}
 
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/api/webconfig");
 	}
+
 }
 
 @EnableWebSecurity
 @Configuration
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 @Profile("noauth") //double negative!
 public class NoAuthConfig extends WebSecurityConfigurerAdapter {
 

@@ -239,7 +239,28 @@ class OperatorServiceTest extends Assert {
 		}
 
 		assertNotNull(e2)
+	}
 
+	@Test
+	public void testFindByEmail() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		def o2 = operatorService.findByEmail("foo@baz.com")
+
+		assertEquals(o1.id,o2.id)
+
+		def o3 = operatorService.findByEmail("baz@foo.com")
+		assertNull(o3)
+	}
+
+	@Test
+	public void testFindNullOperator() throws Exception {
+		def o = operatorService.findByEmail(null)
+		assertNull(o)
 	}
 }
 

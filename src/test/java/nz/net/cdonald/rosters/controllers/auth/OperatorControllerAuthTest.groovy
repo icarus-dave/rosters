@@ -3,9 +3,12 @@ package nz.net.cdonald.rosters.controllers.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.avaje.ebean.EbeanServer
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import nz.ac.auckland.morc.MorcTestBuilder
 import nz.net.cdonald.rosters.Application
 import nz.net.cdonald.rosters.domain.Operator
+import nz.net.cdonald.rosters.services.Auth0Service
 import org.apache.camel.Exchange
 import org.apache.camel.Predicate
 import org.apache.camel.Processor
@@ -23,13 +26,13 @@ class OperatorControllerAuthTest extends MorcTestBuilder {
 		context = app.run()
 
 		def server = context.getBean(EbeanServer.class)
+		def auth0Service = context.getBean(Auth0Service.class)
 
 		def operatorEndpoint = "http://localhost:8080/api/operator"
 
-		String token = JWT.create()
-				.withAudience(context.environment.getProperty("jwt.audience"))
-				.withIssuer(context.environment.getProperty("jwt.issuer"))
-				.sign(Algorithm.HMAC256(context.environment.getProperty("jwt.secret")));
+		String token = Jwts.builder().setSubject("123").signWith(SignatureAlgorithm.HS256,context.environment.getProperty("jwt.secret").bytes)
+				.setIssuer(context.environment.getProperty("jwt.issuer")).setAudience(context.environment.getProperty("jwt.audience"))
+				.claim("app_metadata",["permissions":["unbound_operator"]]).compact()
 
 		server.save(generateOperator("zyx", "abc", "baz@foo.com"))
 
@@ -50,7 +53,8 @@ class OperatorControllerAuthTest extends MorcTestBuilder {
 				.request(headers(header(Exchange.HTTP_METHOD, POST()))
 					,json('{ "firstName":"rrr","lastName":"nnn","email":"abde@asdd.com" }'))
 				.expectsException()
-				.expectation(httpStatusCode(401))
+				//check AuthenticationExceptionEntryPoint is loading correctly
+				.expectation(httpStatusCode(401),jsonpath(".[?(@.code == 401)]"))
 
 	}
 

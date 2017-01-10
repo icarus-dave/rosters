@@ -23,7 +23,7 @@ class WebConfigControllerTest extends MorcTestBuilder {
 
 		syncTest("Test of Get List", configEndpoint)
 				.expectation(headers(header(Exchange.CONTENT_TYPE, "application/json;charset=UTF-8")),
-				predicate { new JsonPathExpression("\$.length()").evaluate(it) == 2 },
+				predicate { new JsonPathExpression("\$.length()").evaluate(it) >= 2 },
 				jsonpath(".[?(@.foo == 'baz')]"),
 				jsonpath(".[?(@.baz == 'foo')]"))
 

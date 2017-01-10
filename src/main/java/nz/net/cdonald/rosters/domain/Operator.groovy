@@ -21,6 +21,9 @@ public class Operator extends BaseModel {
 	@Column(nullable = false, unique = true)
 	String email;
 
+	@Column
+	String authUserId;
+
 	@OneToMany(mappedBy = "operator")
 	List<TeamMembers> teams;
 
