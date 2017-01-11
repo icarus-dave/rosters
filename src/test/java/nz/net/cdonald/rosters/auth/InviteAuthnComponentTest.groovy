@@ -1,4 +1,4 @@
-package nz.net.cdonald.rosters.components
+package nz.net.cdonald.rosters.auth
 
 import com.auth0.spring.security.api.authentication.AuthenticationJsonWebToken
 import com.auth0.spring.security.api.authentication.JwtAuthentication
@@ -55,7 +55,7 @@ class InviteAuthnComponentTest extends Assert {
 	@Test
 	public void testUnboundPermission() {
 		String jwt = Jwts.builder().setSubject("123").signWith(SignatureAlgorithm.HS256,secret.bytes)
-				.setIssuer(issuer).setAudience(audience).claim("app_metadata",["permissions":["unbound_operator"]]).compact()
+				.setIssuer(issuer).setAudience(audience).claim("scope","operator:unbound").compact()
 
 		PreAuthenticatedAuthenticationJsonWebToken token = PreAuthenticatedAuthenticationJsonWebToken.usingToken(jwt);
 
@@ -66,7 +66,8 @@ class InviteAuthnComponentTest extends Assert {
 	@Test
 	public void testUnboundPermissionAndOperator() {
 		String jwt = Jwts.builder().setSubject("123").signWith(SignatureAlgorithm.HS256,secret.bytes)
-				.setIssuer(issuer).setAudience(audience).claim("app_metadata",["permissions":["unbound_operator"],"operator_id":"123"]).compact()
+				.setIssuer(issuer).setAudience(audience).claim("scope","operator:unbound")
+				.claim("app_metadata",["permissions":["operator:unbound"],"operator_id":"123"]).compact()
 
 		PreAuthenticatedAuthenticationJsonWebToken token = PreAuthenticatedAuthenticationJsonWebToken.usingToken(jwt);
 
@@ -189,5 +190,6 @@ class InviteAuthnComponentTest extends Assert {
 
 		auth0Service.deleteUser(user.user_id)
 	}
+
 
 }

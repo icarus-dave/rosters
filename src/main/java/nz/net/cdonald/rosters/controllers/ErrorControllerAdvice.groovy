@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.authentication.InsufficientAuthenticationException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -50,5 +51,12 @@ class ErrorControllerAdvice {
 		def res = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Server error working with database")
 		logger.error("Returning 500 to user", e)
 		return new ResponseEntity(res, HttpStatus.INTERNAL_SERVER_ERROR)
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity HttpMessageNotReadableException(Exception e) throws IOException {
+		def res = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid request made, please check and try again")
+		logger.warn("Invalid request made by user",e)
+		return new ResponseEntity(res, HttpStatus.BAD_REQUEST)
 	}
 }

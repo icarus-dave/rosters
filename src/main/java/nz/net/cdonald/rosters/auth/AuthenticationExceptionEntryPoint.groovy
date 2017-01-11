@@ -1,4 +1,4 @@
-package nz.net.cdonald.rosters.components
+package nz.net.cdonald.rosters.auth
 
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.AuthenticationEntryPoint

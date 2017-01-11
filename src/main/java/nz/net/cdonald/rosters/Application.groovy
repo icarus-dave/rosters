@@ -7,34 +7,23 @@ import com.avaje.ebean.config.Platform
 import com.avaje.ebean.config.ServerConfig
 import com.avaje.ebean.dbmigration.DbMigration
 import com.avaje.ebean.springsupport.factory.EbeanServerFactoryBean
-import nz.net.cdonald.rosters.components.AuthenticationExceptionEntryPoint
-import nz.net.cdonald.rosters.components.InviteAuthnComponent
-import nz.net.cdonald.rosters.services.Auth0Service
-import nz.net.cdonald.rosters.services.OperatorService
+import nz.net.cdonald.rosters.auth.AuthenticationExceptionEntryPoint
+import nz.net.cdonald.rosters.auth.CustomAccessDeniedHandler
+import nz.net.cdonald.rosters.auth.InviteAuthnComponent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.security.SecurityProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
-import org.springframework.core.annotation.Order
 import org.springframework.core.env.SimpleCommandLinePropertySource
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.InsufficientAuthenticationException
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.AuthenticationException
-import org.springframework.security.web.AuthenticationEntryPoint
-import org.springframework.security.web.util.matcher.RequestMatcher
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.servlet.config.annotation.CorsRegistry
-import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
@@ -118,7 +107,6 @@ mvn spring-boot:run -Drun.arguments=local
 @EnableWebSecurity
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 @Profile("!noauth") //double negative!
 public class AuthConfig extends WebSecurityConfigurerAdapter {
 
@@ -137,27 +125,29 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	AuthenticationExceptionEntryPoint authenticationExceptionEntryPoint
 
+	@Autowired
+	CustomAccessDeniedHandler customAccessDeniedHandler
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		JwtWebSecurityConfigurer
 				.forHS256(audience, issuer, inviteAuthnComponent)
 				.configure(http)
 					.exceptionHandling()
-					.authenticationEntryPoint(authenticationExceptionEntryPoint).and()
-				.authorizeRequests().antMatchers("/api/**").fullyAuthenticated();
-	}
-
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		web.ignoring().antMatchers("/api/webconfig");
+					.authenticationEntryPoint(authenticationExceptionEntryPoint)
+					.accessDeniedHandler(customAccessDeniedHandler).and()
+				//broad access decisions are made outside of business logic code
+				.authorizeRequests()
+						//webconfig is cool for all (i.e. to configure front-end app)
+						.antMatchers(HttpMethod.GET,"/api/webconfig").permitAll()
+						//everything else must be authenticated, with the controller adding authz
+						.anyRequest().fullyAuthenticated();
 	}
 
 }
 
 @EnableWebSecurity
 @Configuration
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 @Profile("noauth") //double negative!
 public class NoAuthConfig extends WebSecurityConfigurerAdapter {
 

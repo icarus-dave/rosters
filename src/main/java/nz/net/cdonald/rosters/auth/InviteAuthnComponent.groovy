@@ -1,10 +1,10 @@
-package nz.net.cdonald.rosters.components
+package nz.net.cdonald.rosters.auth
 
 import ch.qos.logback.classic.Logger
 import com.auth0.jwt.JWT
 import com.auth0.jwt.impl.NullClaim
 import com.auth0.spring.security.api.JwtAuthenticationProvider
-import com.auth0.spring.security.api.authentication.JwtAuthentication
+import com.auth0.spring.security.api.authentication.AuthenticationJsonWebToken
 import com.auth0.spring.security.api.authentication.PreAuthenticatedAuthenticationJsonWebToken
 import com.avaje.ebean.EbeanServer
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -28,6 +28,8 @@ Because the first time the user logs in with a JWT without the linkage in app_me
 it each time. This will resolve itself next time they login.
 
 We might consider making this a rule in Auth0 at some point
+
+NOTE! Auth0 has a rule to remap the permissions field in app_metadata to scope to make dealing with authorities easier
  */
 @Component
 class InviteAuthnComponent extends JwtAuthenticationProvider {
@@ -55,8 +57,10 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		def jwtAuthnToken = super.authenticate(authentication) as JwtAuthentication
+		def jwtAuthnToken = super.authenticate(authentication) as AuthenticationJsonWebToken
 		def jwt = JWT.decode(jwtAuthnToken.token)
+
+		if (jwtAuthnToken.getAuthorities().find { it.getAuthority() == "operator:unbound" } ) return jwtAuthnToken
 
 		def objectMapper = new ObjectMapper()
 
@@ -64,9 +68,8 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 
 		if (!(appMetadataClaim instanceof NullClaim)) {
 			def jwtAppMetadata = objectMapper.convertValue(appMetadataClaim.data, Map.class)
-			def permissions = objectMapper.convertValue(jwtAppMetadata.get("permissions"),List.class)
 			//if everything is kosher return as quickly as possible
-			if (jwtAppMetadata.get("operator_id") != null || permissions?.contains("unbound_operator")) return jwtAuthnToken
+			if (jwtAppMetadata.get("operator_id") != null) return jwtAuthnToken
 		}
 
 		//now check if we can link a profile
@@ -78,6 +81,7 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 		} catch(HttpResponseException ex) {
 			logger.error("Auth0 returned an error for subject {}", sub, ex)
 			if (ex.getStatusCode() == 404) throw new BadCredentialsException("Unknown subject")
+			if (ex.getStatusCode() == 400) throw new BadCredentialsException("Unknown subject")
 			else throw ex
 		}
 
@@ -133,3 +137,4 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 		return super.authenticate(PreAuthenticatedAuthenticationJsonWebToken.usingToken(newToken))
 	}
 }
+

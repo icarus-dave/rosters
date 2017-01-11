@@ -1,6 +1,9 @@
 package nz.net.cdonald.rosters.services
 
+import com.auth0.spring.security.api.authentication.PreAuthenticatedAuthenticationJsonWebToken
 import com.avaje.ebean.EbeanServer
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import nz.net.cdonald.rosters.domain.Operator
 import org.junit.After
 import org.junit.Assert
@@ -262,6 +265,67 @@ class OperatorServiceTest extends Assert {
 		def o = operatorService.findByEmail(null)
 		assertNull(o)
 	}
+
+	@Test
+	public void authzOperatorMatch() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		String operatorToken = Jwts.builder().setSubject("123")
+				.claim("app_metadata",["operator_id":o1.id]).compact()
+
+		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
+
+		assertTrue(operatorService.authzOperatorUpdate(o1.id,authn))
+		assertFalse(operatorService.authzOperatorUpdate(456,authn))
+	}
+
+	@Test
+	public void authzOperatorMatchAsString() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		String operatorToken = Jwts.builder().setSubject("123")
+				.claim("app_metadata",["operator_id":"${o1.id}" as String]).compact()
+
+		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
+
+		assertTrue(operatorService.authzOperatorUpdate(o1.id,authn))
+		assertFalse(operatorService.authzOperatorUpdate(456,authn))
+	}
+
+	@Test
+	public void authzNoMetadata() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		String operatorToken = Jwts.builder().setSubject("123").compact()
+		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
+		assertFalse(operatorService.authzOperatorUpdate(123,authn))
+	}
+
+	@Test
+	public void authzNoOperatorId() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "foo@baz.com"
+		operatorService.createOperator(o1)
+
+		String operatorToken = Jwts.builder().setSubject("123").claim("app_metadata",[:]).compact()
+		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
+		assertFalse(operatorService.authzOperatorUpdate(123,authn))
+	}
+
 }
 
 
