@@ -102,7 +102,7 @@ When using the spring-boot command, by default it will use profiles:
 * noauth
 
 Of course somethings things may not work as expected, thus if you want auth then run:
-mvn spring-boot:run -Drun.arguments=local
+ mvn spring-boot:run -Drun.profiles=nocors
 */
 @EnableWebSecurity
 @Configuration
@@ -138,6 +138,8 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 					.accessDeniedHandler(customAccessDeniedHandler).and()
 				//broad access decisions are made outside of business logic code
 				.authorizeRequests()
+						//enable CORS support
+						.antMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 						//webconfig is cool for all (i.e. to configure front-end app)
 						.antMatchers(HttpMethod.GET,"/api/webconfig").permitAll()
 						//everything else must be authenticated, with the controller adding authz
