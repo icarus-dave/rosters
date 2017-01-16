@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-
-import { OperatorService } from './operators/shared/operator.service';
 import { Auth } from './auth.service';
 
 @Component({
@@ -10,5 +8,5 @@ import { Auth } from './auth.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  constructor(private operatorService: OperatorService, private auth: Auth) {}
+  constructor(private auth: Auth) {}
 }

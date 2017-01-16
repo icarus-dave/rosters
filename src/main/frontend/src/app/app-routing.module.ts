@@ -7,7 +7,7 @@ import { LoginGuard } from './login-guard.service';
 
 const routes: Routes = [
   { path: 'operators', component:OperatorsComponent, canActivate: [AuthGuard] },
-  { path: 'login', component:LoginComponent, pathMatch:'full', canActivate: [LoginGuard] },
+  { path: 'login', component:LoginComponent, canActivate: [LoginGuard] },
   { path: '', redirectTo: '/operators', pathMatch: 'full' }
 ,
 ];

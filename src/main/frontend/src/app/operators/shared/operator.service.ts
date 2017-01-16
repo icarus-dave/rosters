@@ -1,8 +1,10 @@
 import { Injectable }    from '@angular/core';
 import { Headers, Http } from '@angular/http';
+import { AuthHttp } from 'angular2-jwt';
 
 import 'rxjs/add/operator/toPromise';
 
+import { Auth } from '../../auth.service';
 import { Operator } from './operator.model';
 import { environment } from '../../../environments/environment'
 
@@ -12,13 +14,13 @@ export class OperatorService {
   private operatorsUrl = `${environment.backendUrl}/operator`;
   private headers = new Headers({'Content-Type': 'application/json'});
 
-  constructor(private http: Http) { }
+  constructor(private auth: Auth, private http: AuthHttp) { }
 
   getOperators(): Promise<Operator[]> {
     return this.http.get(this.operatorsUrl)
                .toPromise()
                .then(response => { 
-               return ((response.json().data || []) as Operator[]).sort(Operator.compare) 
+                return ((response.json().data || []) as Operator[]).sort(Operator.compare) 
                })
                .catch(this.handleError);
   }

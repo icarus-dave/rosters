@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="auth.authenticated()">
   <nav class="navbar navbar-light bg-faded" style="background-color: #e3f2fd;">
     <div >
       <a class="navbar-brand" href="#">Rosters</a>
@@ -18,20 +18,14 @@
         <li class="nav-item">
           <a class="nav-link" href="#">Teams</a>
         </li>
-        <li class="nav-item">
-           <button class="btn btn-primary btn-margin" (click)="auth.login()" *ngIf="!auth.authenticated()">Log In</button>
-        </li>
-        <li class="nav-item">
-           <button class="btn btn-primary btn-margin" (click)="auth.logout()" *ngIf="auth.authenticated()">Log Out</button>
-        </li>
       </ul>
     </div>
   </nav>
 </div>
-<div class="container">
+<div *ngIf="auth.authenticated()" class="container">
   <router-outlet></router-outlet>
 </div>
-<div class="container">
+<div *ngIf="auth.authenticated()" class="container">
   <footer class="footer">
     <div class="container">
       <span class="text-muted">Place sticky footer content here.</span>
