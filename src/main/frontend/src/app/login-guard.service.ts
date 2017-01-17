@@ -3,6 +3,7 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from
 import { Auth }      from './auth.service';
 import { Observable } from 'rxjs';
 import { URLSearchParams } from '@angular/http'
+import { LoginComponent } from './login.component';
 
 @Injectable()
 export class LoginGuard implements CanActivate {
@@ -10,23 +11,40 @@ export class LoginGuard implements CanActivate {
   constructor(private auth: Auth, private router: Router) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    //ugly processing of the returned value from auth0
 
-    //only care if auth0 returns a fragment token
-    if (!this.router.parseUrl(state.url).fragment) return false
+    //if we're already authenticated don't let acccess
+    if (this.auth.authenticated()) {
+      //if we haven't already been redirected then move them away from here
+      if (!this.router.navigated) this.router.navigate(["/operators"])
+      return false;
+    }
 
-    let params = new URLSearchParams(this.router.parseUrl(state.url).fragment)
-    let returnUrl = JSON.parse(decodeURIComponent(params.get("state"))).pathname
-    if (!returnUrl || returnUrl == "/") returnUrl = "/operators"
+    //no fragment means no correct login... do something nicer
+    if (!this.router.parseUrl(state.url).fragment) {
+      return true
+    }
 
-    //only proceed when the authentication token is set
+    //handle the various login cases
     return Observable.create((x) => {
-      Observable.fromEvent(this.auth.lock,'authenticated').subscribe(y => { 
-        x.next(false); 
-        this.router.navigateByUrl( returnUrl )
+      Observable.fromEvent(this.auth.lock,'authenticated').subscribe(authResult => { 
+        x.next(false)
+        let redirect = JSON.parse((authResult as any).state).redirect
+        if (redirect == "/") redirect = "/operators"
+        this.router.navigateByUrl( redirect )
+        x.complete()
+      })
+      Observable.fromEvent(this.auth.lock,'authorization_error').subscribe(y => { 
+        x.next(true)
+        this.router.navigateByUrl( "/login" ) //clear out the error hash from the URL
+        x.complete()
+      })
+      Observable.fromEvent(this.auth.lock,'unrecoverable_error').subscribe(y => { 
+        x.next(true)
+        this.router.navigateByUrl( "/login" ) //clear out the error hash from the URL
         x.complete()
       })
     });
+    
   }
 
 }

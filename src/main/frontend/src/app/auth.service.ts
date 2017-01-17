@@ -1,6 +1,6 @@
 import { Injectable }      from '@angular/core';
 import { tokenNotExpired } from 'angular2-jwt';
-import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Router } from '@angular/router';
 import { WebConfigService } from './webconfig/webconfig.service';
 
@@ -11,31 +11,42 @@ let Auth0Lock = require('auth0-lock').default;
 export class Auth {
 
   lock
+  public errorSource:BehaviorSubject<string>;
 
   constructor(private config:WebConfigService, private router:Router) {
     let domain = config.get("auth.domain");
     let clientId = config.get("auth.clientId");
 
+    this.errorSource = new BehaviorSubject<string>(null);
+
     this.lock = new Auth0Lock(clientId, domain, { closable:false, 
-                                                  auth: { redirectUrl: window.location.origin + '/login', 
+                                                  auth: { redirectUrl: window.location.origin + "/login", 
                                                           responseType:'token', 
                                                           params: { scope:'openid app_metadata' }
                                                         }
                                                 });
-    
-    // Add callback for lock `authenticated` event
+
     this.lock.on("authenticated", (authResult) => {
       localStorage.setItem('id_token', authResult.idToken);
+      this.errorSource.next(null);
+    });
+
+    this.lock.on("authorization_error", (authResult) => {
+      this.errorSource.next(authResult.error_description);
+    });
+
+    this.lock.on("unrecoverable_error", (authResult) => {
+      this.errorSource.next(authResult.error_description);
     });
   }
 
   public login() {
     // Call the show method to display the widget.
-    this.lock.show({ closable:false, redirectUrl: window.location.origin + '/login',
-                              auth: { redirectUrl: window.location.origin + '/login',  
+    this.lock.show({ closable:false, redirectUrl: window.location.origin + "/login",
+                              auth: { redirectUrl: window.location.origin + "/login",  
                                       responseType:'token', 
                                       params: { scope:'openid app_metadata',
-                                      state: JSON.stringify({ pathname: window.location.pathname + window.location.search }) }
+                                      state: JSON.stringify({ redirect: window.location.pathname + window.location.search }) }
                                     }
                             });
   }
