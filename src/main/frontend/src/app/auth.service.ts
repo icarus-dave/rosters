@@ -22,7 +22,7 @@ export class Auth {
     this.lock = new Auth0Lock(clientId, domain, { closable:false, 
                                                   auth: { redirectUrl: window.location.origin + "/login", 
                                                           responseType:'token', 
-                                                          params: { scope:'openid app_metadata' }
+                                                          params: { scope:'openid scope' }
                                                         }
                                                 });
 
@@ -45,7 +45,7 @@ export class Auth {
     this.lock.show({ closable:false, redirectUrl: window.location.origin + "/login",
                               auth: { redirectUrl: window.location.origin + "/login",  
                                       responseType:'token', 
-                                      params: { scope:'openid app_metadata',
+                                      params: { scope:'openid scope',
                                       state: JSON.stringify({ redirect: window.location.pathname + window.location.search }) }
                                     }
                             });
