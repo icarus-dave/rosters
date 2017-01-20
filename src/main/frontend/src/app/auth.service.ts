@@ -19,11 +19,9 @@ export class Auth {
 
     this.errorSource = new BehaviorSubject<string>(null);
 
-    this.lock = new Auth0Lock(clientId, domain, { closable:false, 
-                                                  auth: { redirectUrl: window.location.origin + "/login", 
-                                                          responseType:'token', 
-                                                          params: { scope:'openid scope' }
-                                                        }
+    this.lock = new Auth0Lock(clientId, domain, { closable:false,
+                                                  auth: { redirectUrl: window.location.origin + "/login",
+                                                          responseType:'token' }
                                                 });
 
     this.lock.on("authenticated", (authResult) => {
@@ -42,13 +40,9 @@ export class Auth {
 
   public login() {
     // Call the show method to display the widget.
-    this.lock.show({ closable:false, redirectUrl: window.location.origin + "/login",
-                              auth: { redirectUrl: window.location.origin + "/login",  
-                                      responseType:'token', 
-                                      params: { scope:'openid scope',
-                                      state: JSON.stringify({ redirect: window.location.pathname + window.location.search }) }
-                                    }
-                            });
+    this.lock.show({  auth: { params: { scope:'openid scope app_metadata',
+                        state: JSON.stringify({ redirect: window.location.pathname + window.location.search }) }
+                    }});
   }
 
   public authenticated() {
