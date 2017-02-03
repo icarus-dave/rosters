@@ -15,7 +15,6 @@ export class OperatorsComponent implements OnInit {
   operators: Operator[];
   selectedOperator: Operator;
   errorMessage: string = '';
-  closeResult: string;
 
   constructor(private operatorService: OperatorService, private modalService: NgbModal) { }
 
@@ -23,10 +22,6 @@ export class OperatorsComponent implements OnInit {
     return this.operatorService.getOperators()
       .then(operators => this.operators = operators )
       .catch((err) => this.errorMessage = err );
-  }
-
-  onSelect(operator: Operator): void {  
-    this.selectedOperator = operator;
   }
 
   ngOnInit(): void {
@@ -38,6 +33,7 @@ export class OperatorsComponent implements OnInit {
     modalRef.result.then((result) => { this.getOperators() }, (reason) => { } );
     //clone the operator to avoid two-way updates before saving
     if (operator) modalRef.componentInstance.operator = new Operator(operator); 
+    return modalRef;
   }
 
 }

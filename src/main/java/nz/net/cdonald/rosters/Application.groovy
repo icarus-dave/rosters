@@ -7,6 +7,9 @@ import com.avaje.ebean.config.Platform
 import com.avaje.ebean.config.ServerConfig
 import com.avaje.ebean.dbmigration.DbMigration
 import com.avaje.ebean.springsupport.factory.EbeanServerFactoryBean
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import nz.net.cdonald.rosters.auth.AuthenticationExceptionEntryPoint
 import nz.net.cdonald.rosters.auth.CustomAccessDeniedHandler
 import nz.net.cdonald.rosters.auth.InviteAuthnComponent
@@ -26,6 +29,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
+
+import javax.annotation.PostConstruct
 
 @SpringBootApplication
 public class Application {
@@ -77,6 +82,19 @@ public class Application {
 		ebeanServerFactoryBean.setServerConfig(config)
 		return ebeanServerFactoryBean
 	}
+
+	/*
+		Use Jackson Views to restrict what is returned to the client
+	 */
+	@Autowired
+	private ObjectMapper objectMapper;
+
+	@PostConstruct
+	public void configureObjectMapper() {
+		objectMapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true);
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,true)
+	}
+
 }
 
 

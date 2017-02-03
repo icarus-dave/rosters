@@ -126,6 +126,13 @@ class OperatorControllerTest extends MorcTestBuilder {
 				.expectsException()
 				.expectation(httpStatusCode(409))
 
+		/*
+			* Test list teams returned
+			* Test get teams returned
+			* Test team update fails for operator
+			* cannot update auth user column
+		 */
+
 	}
 
 	def generateOperator(firstName = "abc", lastName = "zyx", email = "foo@baz.com") {
