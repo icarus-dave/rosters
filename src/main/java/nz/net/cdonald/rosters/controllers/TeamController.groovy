@@ -37,14 +37,11 @@ class TeamController {
 				.orElse(new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Team not found for id: " + id), HttpStatus.NOT_FOUND))
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
 	@JsonView(RelationshipView.Team)
 	@PreAuthorize("hasAuthority('team:modify')")
 	public ResponseEntity updateTeam(@PathVariable long id, @JsonView(RelationshipView.Team) @RequestBody Team team) {
-		if (team.id == null || id != team.id)
-			return new ResponseEntity(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-					"Team id and path id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
-
+		team.id = id
 		return new ResponseEntity(teamService.updateTeam(team), HttpStatus.OK)
 	}
 
@@ -53,36 +50,36 @@ class TeamController {
 	@PreAuthorize("hasAuthority('team:modify')")
 	public Team createTeam(@JsonView(RelationshipView.TeamCreate) @RequestBody Team team) {
 		team.teamLead = operatorService.getOperator(team.team_lead_id).orElse(null)
-
 		return teamService.createTeam(team)
 	}
 
-	@RequestMapping(value = "/{id}/members", method = RequestMethod.POST)
+	@RequestMapping(value = "/{id}/members", method = RequestMethod.PATCH)
 	@JsonView(RelationshipView.TeamMember)
-	@PreAuthorize("hasAuthority('team:modify') or @teamService.authzTeamMemberUpdate(#id,authentication)")
+	@PreAuthorize("hasAuthority('team:modify')")
 	public WrappedList<TeamMember> addTeamMembers(@PathVariable long id, @RequestBody List<TeamMember> members) {
-		return new WrappedList<TeamMember>(teamService.createTeamMembers(id,members))
+		members.each {
+			it.team_id = id
+		}
+		return new WrappedList<TeamMember>(teamService.addTeamMembers(members))
 	}
 
-	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.PATCH)
 	@JsonView(RelationshipView.TeamMember)
 	@PreAuthorize("hasAuthority('team:modify') or @teamService.authzTeamMemberUpdate(#id,authentication)")
 	public ResponseEntity updateTeamMember(@PathVariable long id, @PathVariable long operatorId, @RequestBody TeamMember member) {
-		if (member.operator_id == 0 || operatorId != member.operator_id)
-			return new ResponseEntity(new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
-					"Operator id and team member id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
-
-		return new ResponseEntity(teamService.updateTeamMemberFromOperator(id,member), HttpStatus.OK)
+		member.operator_id = operatorId
+		member.team_id = id
+		return new ResponseEntity(teamService.updateTeamMemberForOperator(member), HttpStatus.OK)
 	}
 
 	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.DELETE)
-	@PreAuthorize("hasAuthority('team:modify') or @teamService.authzTeamMemberUpdate(#id,authentication)")
+	@PreAuthorize("hasAuthority('team:modify')")
 	public void removeMember(@PathVariable long id, @PathVariable long operatorId) {
 		teamService.removeTeamMember(teamService.getTeam(id).orElseThrow { throw new IllegalArgumentException("Unknown team id: " + id) },
 				operatorService.getOperator(operatorId).orElseThrow { throw new IllegalArgumentException("Unknown operator id: " + operatorId)})
 	}
 
-	@RequestMapping(value = "/{id}/lead/{operatorId}", method = RequestMethod.POST)
+	@RequestMapping(value = "/{id}/lead/{operatorId}", method = RequestMethod.PATCH)
 	@PreAuthorize("hasAuthority('team:modify')")
 	public void setTeamLead(@PathVariable long id, @PathVariable long operatorId) {
 		teamService.setTeamLead(id,operatorId)

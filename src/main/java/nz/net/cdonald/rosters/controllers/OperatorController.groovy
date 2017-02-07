@@ -39,12 +39,11 @@ class OperatorController {
 		return operatorService.createOperator(operator)
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
 	@PreAuthorize("hasAuthority('operator:modify') or @operatorService.authzOperatorUpdate(#id,authentication)")
 	@JsonView(RelationshipView.Operator)
 	public ResponseEntity updateOperator(@RequestBody Operator operator, @PathVariable long id) {
-		if (operator.id == null || id != operator.id) return new ResponseEntity(
-				new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Operator id and path id parameter mismatch or not specified"), HttpStatus.BAD_REQUEST)
+		operator.id = id
 		return new ResponseEntity(operatorService.updateOperator(operator), HttpStatus.OK)
 	}
 

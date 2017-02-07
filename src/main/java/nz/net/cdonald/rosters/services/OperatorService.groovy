@@ -49,18 +49,20 @@ class OperatorService {
 	}
 
 	public Operator updateOperator(Operator operator) {
-		if (!validateEmail(operator.email)) throw new IllegalArgumentException("Email invalid")
+		if (operator.email) {
+			if (!validateEmail(operator.email)) throw new IllegalArgumentException("Email invalid")
 
-		operator.email = operator.email.trim().toLowerCase()
+			operator.email = operator.email.trim().toLowerCase()
 
-		def exists = findByEmail(operator.email)
+			def exists = findByEmail(operator.email)
 
-		//provide a nicer exception than would otherwise be thrown
-		if (exists && exists.id != operator.id) throw new IllegalArgumentException("Email already in use")
+			//provide a nicer exception than would otherwise be thrown
+			if (exists && exists.id != operator.id) throw new IllegalArgumentException("Email already in use")
+		}
 
 		server.update(operator)
 		logger.info("Updated operator {}:{}",operator.id, operator.email)
-		return opera
+		return operator
 	}
 
 	def Operator findByEmail(String email) {

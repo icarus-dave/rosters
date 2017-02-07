@@ -22,11 +22,15 @@ public class Team extends BaseModel {
 	@Column(nullable = false)
 	String name
 
+	@JsonIgnore
+	@Column(nullable=false,unique=true)
+	String lcname
+
 	@OneToMany(cascade=CascadeType.PERSIST, mappedBy = "team")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	Set<TeamMember> members = new HashSet<>()
 
-	@ManyToOne(fetch=FetchType.EAGER)
+	@ManyToOne
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY,value="team_lead")
 	Operator teamLead
 
@@ -39,5 +43,10 @@ public class Team extends BaseModel {
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@JsonView(RelationshipView.TeamCreate)
 	Set<Long> member_ids = new HashSet<>()
+
+	public void setName(String name) {
+		this.name = name
+		this.lcname = name.toLowerCase()
+	}
 
 }

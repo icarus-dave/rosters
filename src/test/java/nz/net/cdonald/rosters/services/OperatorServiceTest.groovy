@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 
 import javax.persistence.OptimisticLockException
+import javax.persistence.PersistenceException
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -61,7 +62,7 @@ class OperatorServiceTest extends Assert {
 		o1.email = "foo@baz.com"
 		server.save(o1)
 
-		def o = operatorService.getOperator(o1.id)
+		def o = operatorService.getOperator(o1.id).orElse(null)
 		assertEquals("abc", o.firstName)
 		assertEquals("def", o.lastName)
 		assertEquals("foo@baz.com", o.email)
@@ -88,12 +89,15 @@ class OperatorServiceTest extends Assert {
 
 		operatorService.createOperator(o1)
 
-		o1.firstName = "zyx"
+		def o2 = new Operator()
+		o2.id = o1.id
+		o2.firstName = "zyx"
 
-		def o2 = operatorService.updateOperator(o1)
+		def o3 = operatorService.updateOperator(o2)
 
-		assertEquals("zyx", o2.firstName)
-		assertEquals(2,o2.version)
+		assertEquals("zyx", o3.firstName)
+		assertEquals("foo@baz.com",o3.email)
+		assertEquals(1,o3.version)
 	}
 
 	@Test
@@ -237,7 +241,7 @@ class OperatorServiceTest extends Assert {
 		def e2
 		try {
 			operatorService.updateOperator(o1)
-		} catch (IllegalArgumentException e) {
+		} catch (PersistenceException e) {
 			e2 = e
 		}
 

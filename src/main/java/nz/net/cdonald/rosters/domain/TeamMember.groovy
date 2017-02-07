@@ -39,6 +39,10 @@ public class TeamMember {
 	@JsonView(RelationshipView.TeamMember)
 	long operator_id
 
+	@Transient
+	@JsonIgnore
+	long team_id
+
 	public void setOperator(Operator operator) {
 		this.operator = operator
 		id.operator_id = operator.id
