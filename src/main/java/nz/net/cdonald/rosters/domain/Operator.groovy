@@ -10,13 +10,20 @@ import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.OneToMany
+import javax.persistence.PrePersist
 
 @Entity
 @CompileStatic
 @JsonIgnoreProperties(value=["teams"], allowGetters=true)
 public class Operator extends BaseModel {
 
-	boolean active = true;
+	@Column
+	Boolean active;
+
+	@PrePersist
+	void preInsert() {
+		if (active == null) active = true
+	}
 
 	@Column(nullable = false)
 	@JsonProperty("first_name")

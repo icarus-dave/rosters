@@ -45,6 +45,7 @@ class OperatorServiceTest extends Assert {
 		o2.firstName = "Baz"
 		o2.lastName = "aFoo"
 		o2.email = "foo@foo.com"
+		o2.active = false
 		server.save(o2)
 
 		def list = operatorService.getOperators()
@@ -52,6 +53,8 @@ class OperatorServiceTest extends Assert {
 
 		assertTrue(list.get(0).firstName == "Baz")
 		assertTrue(list.get(1).firstName == "Foo")
+		assertTrue(o1.active)
+		assertFalse(o2.active)
 	}
 
 	@Test
@@ -74,10 +77,12 @@ class OperatorServiceTest extends Assert {
 		o1.firstName = "abc"
 		o1.lastName = "def"
 		o1.email = "foo@baz.com"
+		o1.active = true
 
 		def o2 = operatorService.createOperator(o1)
 		assert o2.id != 0
 		assertEquals(o2.firstName, "abc")
+		assertTrue(o2.active)
 	}
 
 	@Test

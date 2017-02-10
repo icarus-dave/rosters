@@ -28,6 +28,7 @@ public class Team extends BaseModel {
 
 	@OneToMany(cascade=CascadeType.PERSIST, mappedBy = "team")
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	@JsonView(RelationshipView.Team)
 	Set<TeamMember> members = new HashSet<>()
 
 	@ManyToOne
@@ -37,7 +38,7 @@ public class Team extends BaseModel {
 	@Transient
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@JsonView(RelationshipView.TeamCreate)
-	long team_lead_id
+	Long team_lead_id
 
 	@Transient
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

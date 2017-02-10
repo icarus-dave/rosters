@@ -150,7 +150,7 @@ class InviteAuthnComponentTest extends Assert {
 		PreAuthenticatedAuthenticationJsonWebToken token = PreAuthenticatedAuthenticationJsonWebToken.usingToken(jwt);
 		def authn = inviteAuthnComponent.authenticate(token);
 
-		def o1 = operatorService.getOperator(o.id)
+		def o1 = operatorService.getOperator(o.id).orElseThrow { new Exception() }
 		assertEquals(user.user_id, o1.authUserId)
 
 		def user1 = auth0Service.getProfile(user.user_id)

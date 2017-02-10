@@ -39,7 +39,7 @@ class OperatorController {
 		return operatorService.createOperator(operator)
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@PreAuthorize("hasAuthority('operator:modify') or @operatorService.authzOperatorUpdate(#id,authentication)")
 	@JsonView(RelationshipView.Operator)
 	public ResponseEntity updateOperator(@RequestBody Operator operator, @PathVariable long id) {

@@ -68,47 +68,47 @@ class OperatorControllerAuthTest extends MorcTestBuilder {
 
 		syncTest("Test of secured POST", operatorEndpoint)
 				.request(headers(header(Exchange.HTTP_METHOD, POST()),header("Authorization","Bearer $token"))
-					,json('{ "firstName":"rrr","lastName":"nnn","email":"abde@asdd.com" }'))
+					,json('{ "first_name":"rrr","last_name":"nnn","email":"abde@asdd.com" }'))
 				.expectation(jsonpath(".[?(@.version == 1)]"))
 
 		syncTest("Test of secured POST failure", operatorEndpoint)
 				.request(headers(header(Exchange.HTTP_METHOD, POST()))
-					,json('{ "firstName":"rrr","lastName":"nnn","email":"abde@asdd.com" }'))
+					,json('{ "first_name":"rrr","last_name":"nnn","email":"abde@asdd.com" }'))
 				.expectsException()
 				//check AuthenticationExceptionEntryPoint is loading correctly
 				.expectation(httpStatusCode(401),jsonpath(".[?(@.code == 401)]"))
 
 		syncTest("Test of secured POST authz failure", operatorEndpoint)
 				.request(headers(header(Exchange.HTTP_METHOD, POST()),header("Authorization","Bearer $unauthz"))
-				,json('{ "firstName":"rrr","lastName":"nnn","email":"abde@asdd.com" }'))
+				,json('{ "first_name":"rrr","last_name":"nnn","email":"abde@asdd.com" }'))
 				.expectsException()
 				//no permissions to access this!
 				.expectation(httpStatusCode(403),jsonpath(".[?(@.code == 403)]"))
 
 		syncTest("Test of authorized GET", operatorEndpoint + "/" + o.id)
 				.request(headers(header("Authorization","Bearer $token")))
-				.expectation(jsonpath(".[?(@.firstName == 'zyx')]"));
+				.expectation(jsonpath(".[?(@.first_name == 'zyx')]"));
 
 		syncTest("Test of secured PUT", operatorEndpoint + "/" + o.id)
 				.request(headers(header(Exchange.HTTP_METHOD, PUT()),header("Authorization","Bearer $token"))
-				,json('{ "id":' + o.id + ', "firstName":"rrr","lastName":"nnn","email":"baz@foo.com" }'))
+				,json('{ "id":' + o.id + ', "first_name":"rrr","last_name":"nnn","email":"baz@foo.com" }'))
 				//version number starts at 0...
 				.expectation(jsonpath(".[?(@.version == 1)]"))
 
 		syncTest("Test of secured PUT authz failure", operatorEndpoint + "/" + o.id)
 				.request(headers(header(Exchange.HTTP_METHOD, PUT()),header("Authorization","Bearer $unauthz"))
-				,json('{ "id":' + o.id + ', "firstName":"rrr","lastName":"nnn","email":"baz@foo.com" }'))
+				,json('{ "id":' + o.id + ', "first_name":"rrr","last_name":"nnn","email":"baz@foo.com" }'))
 				.expectsException()
 				.expectation(httpStatusCode(403),jsonpath(".[?(@.code == 403)]"))
 
 		syncTest("Test of secured PUT authz with operator id matching", operatorEndpoint + "/" + o.id)
 				.request(headers(header(Exchange.HTTP_METHOD, PUT()),header("Authorization","Bearer $tokenOp"))
-				,json('{ "id":' + o.id + ', "firstName":"rrr","lastName":"nnn","email":"baz@foo.com" }'))
+				,json('{ "id":' + o.id + ', "first_name":"rrr","last_name":"nnn","email":"baz@foo.com" }'))
 				.expectation(httpStatusCode(200))
 
 		syncTest("Test of secured PUT authz failure op mismatch", operatorEndpoint + "/" + o.id)
 				.request(headers(header(Exchange.HTTP_METHOD, PUT()),header("Authorization","Bearer $tokenOp2"))
-					,json('{ "id":' + o.id + ', "firstName":"rrr","lastName":"nnn","email":"baz@foo.com" }'))
+					,json('{ "id":' + o.id + ', "first_name":"rrr","last_name":"nnn","email":"baz@foo.com" }'))
 				.expectsException()
 				.expectation(httpStatusCode(403),jsonpath(".[?(@.code == 403)]"))
 	}

@@ -103,6 +103,7 @@ class TeamServiceTest extends Assert {
 			e = ex
 		}
 		assertNotNull(e)
+		assertEquals(0,server.find(Team.class).findCount())
 	}
 
 	@Test
@@ -290,6 +291,34 @@ class TeamServiceTest extends Assert {
 	}
 
 	@Test
+	public void testOperatorNotInTeamException() {
+		def t = new Team()
+		t.name = "a"
+
+		teamService.createTeam(t)
+
+		def o = new Operator()
+		o.firstName = "Foo"
+		o.lastName = "Baz"
+		o.email = "foo@baz.com"
+		server.save(o)
+
+		TeamMember tm = new TeamMember()
+		tm.operator_id = o.id
+		tm.team_id = t.id
+
+		IllegalArgumentException e = null
+
+		try {
+			teamService.updateTeamMemberForOperator(tm)
+		} catch (IllegalArgumentException ex) {
+			e = ex
+		}
+
+		assertNotNull(e)
+	}
+
+	@Test
 	public void testRemoveUnmatchedTeamOperator() {
 		def t = new Team()
 		t.name = "foo"
@@ -382,10 +411,7 @@ class TeamServiceTest extends Assert {
 		o.email = "foo@baz.com"
 		operatorService.createOperator(o)
 
-		def tm = new TeamMember()
-		tm.operator = o
-		tm.team = t
-		server.save(tm)
+		def tm = teamService.assignTeamMember(t,o)
 
 		tm.rosterWeighting = 42
 

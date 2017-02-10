@@ -37,10 +37,10 @@ class TeamController {
 				.orElse(new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Team not found for id: " + id), HttpStatus.NOT_FOUND))
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@JsonView(RelationshipView.Team)
 	@PreAuthorize("hasAuthority('team:modify')")
-	public ResponseEntity updateTeam(@PathVariable long id, @JsonView(RelationshipView.Team) @RequestBody Team team) {
+	public ResponseEntity updateTeam(@PathVariable long id, @RequestBody @JsonView(RelationshipView.Team) Team team) {
 		team.id = id
 		return new ResponseEntity(teamService.updateTeam(team), HttpStatus.OK)
 	}
@@ -49,21 +49,22 @@ class TeamController {
 	@JsonView(RelationshipView.Team)
 	@PreAuthorize("hasAuthority('team:modify')")
 	public Team createTeam(@JsonView(RelationshipView.TeamCreate) @RequestBody Team team) {
-		team.teamLead = operatorService.getOperator(team.team_lead_id).orElse(null)
+		if (team.team_lead_id != null) team.teamLead = operatorService.getOperator(team.team_lead_id)
+				.orElseThrow { throw new IllegalArgumentException("Unknown operator: " + team.team_lead_id) }
 		return teamService.createTeam(team)
 	}
 
-	@RequestMapping(value = "/{id}/members", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/{id}/members", method = RequestMethod.PUT)
 	@JsonView(RelationshipView.TeamMember)
 	@PreAuthorize("hasAuthority('team:modify')")
-	public WrappedList<TeamMember> addTeamMembers(@PathVariable long id, @RequestBody List<TeamMember> members) {
+	public void addTeamMembers(@PathVariable long id, @RequestBody List<TeamMember> members) {
 		members.each {
 			it.team_id = id
 		}
-		return new WrappedList<TeamMember>(teamService.addTeamMembers(members))
+		teamService.addTeamMembers(members)
 	}
 
-	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.PUT)
 	@JsonView(RelationshipView.TeamMember)
 	@PreAuthorize("hasAuthority('team:modify') or @teamService.authzTeamMemberUpdate(#id,authentication)")
 	public ResponseEntity updateTeamMember(@PathVariable long id, @PathVariable long operatorId, @RequestBody TeamMember member) {
@@ -79,7 +80,7 @@ class TeamController {
 				operatorService.getOperator(operatorId).orElseThrow { throw new IllegalArgumentException("Unknown operator id: " + operatorId)})
 	}
 
-	@RequestMapping(value = "/{id}/lead/{operatorId}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/{id}/lead/{operatorId}", method = RequestMethod.PUT)
 	@PreAuthorize("hasAuthority('team:modify')")
 	public void setTeamLead(@PathVariable long id, @PathVariable long operatorId) {
 		teamService.setTeamLead(id,operatorId)

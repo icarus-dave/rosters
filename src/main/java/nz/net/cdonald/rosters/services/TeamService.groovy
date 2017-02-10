@@ -30,10 +30,13 @@ class TeamService {
 	def createTeam(Team t) {
 		if (!t.name) throw new IllegalArgumentException("Team name must be specified")
 		server.save(t)
-		logger.info("Created team {}:{}",t.id, t.name)
+		logger.info("Created team {}:{}", t.id, t.name)
 		t.member_ids.asList().each {
-			assignTeamMember(t,operatorService.getOperator(it).orElseThrow { new IllegalArgumentException("Operator for id " + it + " is unknown")})
+			assignTeamMember(t, operatorService.getOperator(it).orElseThrow {
+				new IllegalArgumentException("Operator for id " + it + " is unknown")
+			})
 		};
+
 		return t
 	}
 
@@ -72,6 +75,7 @@ class TeamService {
 		server.refreshMany(operator,"teams")
 
 		logger.info("Assigned operator {}:{} to team {}:{}",operator.id,operator.email,team.id,team.name)
+		return t
 	}
 
 	def removeTeamMember(Team team, Operator operator) {
@@ -89,6 +93,9 @@ class TeamService {
 	def updateTeamMemberForOperator(TeamMember tm) {
 		if (!tm.operator) tm.setOperator(operatorService.getOperator(tm.operator_id).orElseThrow { new IllegalArgumentException("Operator ID " + tm.operator_id + " is unknown") })
 		if (!tm.team) tm.setTeam(getTeam(tm.team_id).orElseThrow { new IllegalArgumentException("Team ID " + tm.team_id + " is unknown") })
+
+		if (!operatorInTeam(tm.team,tm.operator))
+			throw new IllegalArgumentException("Operator ${tm.operator.id} is not a member of Team ${tm.team.id}")
 
 		server.update(tm)
 
@@ -127,6 +134,10 @@ class TeamService {
 		team.teamLead = null
 
 		server.save(team)
+	}
+
+	def boolean operatorInTeam(Team t, Operator o) {
+		return t.members.find { it.operator.id == o.id } != null
 	}
 
 	def boolean authzTeamMemberUpdate(long id, Authentication authn) {
