@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.authentication.InsufficientAuthenticationException
-import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -56,7 +55,7 @@ class ErrorControllerAdvice {
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity HttpMessageNotReadableException(Exception e) throws IOException {
 		def res = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Invalid request made, please check and try again")
-		logger.warn("Invalid request made by user",e)
+		logger.warn("Invalid request made by user", e)
 		return new ResponseEntity(res, HttpStatus.BAD_REQUEST)
 	}
 }

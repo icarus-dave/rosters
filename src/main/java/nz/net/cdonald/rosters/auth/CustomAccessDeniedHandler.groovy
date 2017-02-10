@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class CustomAccessDeniedHandler implements AccessDeniedHandler{
+class CustomAccessDeniedHandler implements AccessDeniedHandler {
 	void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
 		response.setContentType("application/json")
 		response.setStatus(HttpServletResponse.SC_FORBIDDEN)

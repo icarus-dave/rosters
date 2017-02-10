@@ -22,15 +22,15 @@ class OperatorService {
 
 	public List<Operator> getOperators() {
 		def list = server.find(Operator.class).orderBy("UPPER(lastName)").findList()
-		logger.debug("Found {} operators",list.size())
+		logger.debug("Found {} operators", list.size())
 		return list
 	}
 
 	public Optional<Operator> getOperator(long operatorId) {
-		logger.debug("Searching for operator {}",operatorId)
+		logger.debug("Searching for operator {}", operatorId)
 		def op = server.find(Operator.class).where().eq("id", operatorId).findUnique();
-		if (op) logger.debug("Found operator for {}:{}",op.id,op.email)
-		else logger.info("Operator {} not found",operatorId)
+		if (op) logger.debug("Found operator for {}:{}", op.id, op.email)
+		else logger.info("Operator {} not found", operatorId)
 		return Optional.ofNullable(op)
 	}
 
@@ -44,7 +44,7 @@ class OperatorService {
 		operator.email = operator.email.trim().toLowerCase()
 
 		server.save(operator)
-		logger.info("Created operator {}:{}",operator.id, operator.email)
+		logger.info("Created operator {}:{}", operator.id, operator.email)
 		return operator
 	}
 
@@ -61,7 +61,7 @@ class OperatorService {
 		}
 
 		server.update(operator)
-		logger.info("Updated operator {}:{}",operator.id, operator.email)
+		logger.info("Updated operator {}:{}", operator.id, operator.email)
 		return operator
 	}
 

@@ -6,15 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonView
 import groovy.transform.CompileStatic
 
-import javax.persistence.CascadeType
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.OneToMany
-import javax.persistence.PrePersist
+import javax.persistence.*
 
 @Entity
 @CompileStatic
-@JsonIgnoreProperties(value=["teams"], allowGetters=true)
+@JsonIgnoreProperties(value = ["teams"], allowGetters = true)
 public class Operator extends BaseModel {
 
 	@Column
@@ -40,7 +36,7 @@ public class Operator extends BaseModel {
 	@JsonIgnore
 	String authUserId;
 
-	@OneToMany(cascade=CascadeType.PERSIST, mappedBy = "operator")
+	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "operator")
 	@JsonView(RelationshipView.Operator)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	Set<TeamMember> teams = new HashSet()

@@ -10,7 +10,7 @@ import javax.persistence.*
 
 @Entity
 @CompileStatic
-@JsonIgnoreProperties(value=["operator","team"], allowGetters=true)
+@JsonIgnoreProperties(value = ["operator", "team"], allowGetters = true)
 public class TeamMember {
 
 	@EmbeddedId
@@ -20,7 +20,7 @@ public class TeamMember {
 	@ManyToOne
 	@JoinColumn(name = "operator_id", insertable = false, updatable = false)
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	@JsonView([RelationshipView.Team,RelationshipView.TeamMember])
+	@JsonView([RelationshipView.Team, RelationshipView.TeamMember])
 	Operator operator
 
 	@ManyToOne
@@ -57,7 +57,10 @@ public class TeamMember {
 
 class RelationshipView {
 	public static class Team {}
+
 	public static class Operator {}
+
 	public static class TeamMember {}
+
 	public static class TeamCreate {}
 }

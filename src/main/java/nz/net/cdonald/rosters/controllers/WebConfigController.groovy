@@ -26,10 +26,10 @@ class WebConfigController {
 		(environment as AbstractEnvironment).getPropertySources()
 				.findAll { it instanceof MapPropertySource && it.getSource() instanceof Map }
 				.each { ps ->
-					ps.getSource().each { k,v ->
-						if (k.startsWith("frontend.")) webConfig.put(k - "frontend.",environment.getProperty(k) as String)
-					}
-				}
+			ps.getSource().each { k, v ->
+				if (k.startsWith("frontend.")) webConfig.put(k - "frontend.", environment.getProperty(k) as String)
+			}
+		}
 		return webConfig
 	}
 

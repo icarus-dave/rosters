@@ -33,7 +33,7 @@ class TeamController {
 	@RequestMapping("/{id}")
 	@JsonView(RelationshipView.Team)
 	public ResponseEntity getTeam(@PathVariable long id) {
-		return teamService.getTeam(id).map({ team -> return new ResponseEntity(team, HttpStatus.OK)})
+		return teamService.getTeam(id).map({ team -> return new ResponseEntity(team, HttpStatus.OK) })
 				.orElse(new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Team not found for id: " + id), HttpStatus.NOT_FOUND))
 	}
 
@@ -67,7 +67,8 @@ class TeamController {
 	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.PUT)
 	@JsonView(RelationshipView.TeamMember)
 	@PreAuthorize("hasAuthority('team:modify') or @teamService.authzTeamMemberUpdate(#id,authentication)")
-	public ResponseEntity updateTeamMember(@PathVariable long id, @PathVariable long operatorId, @RequestBody TeamMember member) {
+	public ResponseEntity updateTeamMember(
+			@PathVariable long id, @PathVariable long operatorId, @RequestBody TeamMember member) {
 		member.operator_id = operatorId
 		member.team_id = id
 		return new ResponseEntity(teamService.updateTeamMemberForOperator(member), HttpStatus.OK)
@@ -76,14 +77,18 @@ class TeamController {
 	@RequestMapping(value = "/{id}/members/{operatorId}", method = RequestMethod.DELETE)
 	@PreAuthorize("hasAuthority('team:modify')")
 	public void removeMember(@PathVariable long id, @PathVariable long operatorId) {
-		teamService.removeTeamMember(teamService.getTeam(id).orElseThrow { throw new IllegalArgumentException("Unknown team id: " + id) },
-				operatorService.getOperator(operatorId).orElseThrow { throw new IllegalArgumentException("Unknown operator id: " + operatorId)})
+		teamService.removeTeamMember(teamService.getTeam(id).orElseThrow {
+			throw new IllegalArgumentException("Unknown team id: " + id)
+		},
+				operatorService.getOperator(operatorId).orElseThrow {
+					throw new IllegalArgumentException("Unknown operator id: " + operatorId)
+				})
 	}
 
 	@RequestMapping(value = "/{id}/lead/{operatorId}", method = RequestMethod.PUT)
 	@PreAuthorize("hasAuthority('team:modify')")
 	public void setTeamLead(@PathVariable long id, @PathVariable long operatorId) {
-		teamService.setTeamLead(id,operatorId)
+		teamService.setTeamLead(id, operatorId)
 	}
 
 	@RequestMapping(value = "/{id}/lead", method = RequestMethod.DELETE)

@@ -28,7 +28,7 @@ class OperatorController {
 	@RequestMapping("/{id}")
 	@JsonView(RelationshipView.Operator)
 	public ResponseEntity getOperator(@PathVariable long id) {
-		return operatorService.getOperator(id).map({ operator -> return new ResponseEntity(operator, HttpStatus.OK)})
+		return operatorService.getOperator(id).map({ operator -> return new ResponseEntity(operator, HttpStatus.OK) })
 				.orElse(new ResponseEntity(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Operator not found"), HttpStatus.NOT_FOUND))
 	}
 

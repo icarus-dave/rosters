@@ -54,15 +54,15 @@ class TeamService {
 
 	def updateTeam(Team team) {
 		server.update(team)
-		server.refreshMany(team,"members")
-		logger.info("Updated team {}:{}",team.id,team.name)
+		server.refreshMany(team, "members")
+		logger.info("Updated team {}:{}", team.id, team.name)
 		return team
 	}
 
 	//TeamMember?
 	def assignTeamMember(Team team, Operator operator) {
 		if (team.members.find { it.operator.id == operator.id }) {
-			logger.info("Operator: {}:{} is already a member of Team {}:{}, skipping",operator.id,operator.email,team.id,team.name)
+			logger.info("Operator: {}:{} is already a member of Team {}:{}, skipping", operator.id, operator.email, team.id, team.name)
 			return
 		}
 
@@ -71,30 +71,34 @@ class TeamService {
 		t.team = team
 
 		server.save(t)
-		server.refreshMany(team,"members")
-		server.refreshMany(operator,"teams")
+		server.refreshMany(team, "members")
+		server.refreshMany(operator, "teams")
 
-		logger.info("Assigned operator {}:{} to team {}:{}",operator.id,operator.email,team.id,team.name)
+		logger.info("Assigned operator {}:{} to team {}:{}", operator.id, operator.email, team.id, team.name)
 		return t
 	}
 
 	def removeTeamMember(Team team, Operator operator) {
 		if (!team.members.find { it.operator.id == operator.id }) {
-			logger.info("Operator {}:{} does not belong to Team {}:{} and cannot be deleted, skipping",operator.id,operator.email,team.id,team.name)
+			logger.info("Operator {}:{} does not belong to Team {}:{} and cannot be deleted, skipping", operator.id, operator.email, team.id, team.name)
 			return
 		}
 		server.delete(team.members.find { it.operator.id == operator.id })
-		server.refreshMany(team,"members")
-		server.refreshMany(operator,"teams")
+		server.refreshMany(team, "members")
+		server.refreshMany(operator, "teams")
 
-		logger.info("Removed operator {}:{} from team {}:{}",operator.id,operator.email,team.id,team.name)
+		logger.info("Removed operator {}:{} from team {}:{}", operator.id, operator.email, team.id, team.name)
 	}
 
 	def updateTeamMemberForOperator(TeamMember tm) {
-		if (!tm.operator) tm.setOperator(operatorService.getOperator(tm.operator_id).orElseThrow { new IllegalArgumentException("Operator ID " + tm.operator_id + " is unknown") })
-		if (!tm.team) tm.setTeam(getTeam(tm.team_id).orElseThrow { new IllegalArgumentException("Team ID " + tm.team_id + " is unknown") })
+		if (!tm.operator) tm.setOperator(operatorService.getOperator(tm.operator_id).orElseThrow {
+			new IllegalArgumentException("Operator ID " + tm.operator_id + " is unknown")
+		})
+		if (!tm.team) tm.setTeam(getTeam(tm.team_id).orElseThrow {
+			new IllegalArgumentException("Team ID " + tm.team_id + " is unknown")
+		})
 
-		if (!operatorInTeam(tm.team,tm.operator))
+		if (!operatorInTeam(tm.team, tm.operator))
 			throw new IllegalArgumentException("Operator ${tm.operator.id} is not a member of Team ${tm.team.id}")
 
 		server.update(tm)
@@ -105,14 +109,16 @@ class TeamService {
 	@Transactional
 	def addTeamMembers(List<TeamMember> tm) {
 		tm.each { member ->
-			member.team = member.team != null ? member.team : getTeam(member.team_id).orElseThrow { new IllegalArgumentException("Team ID + " + member.team_id + " is unknown") }
+			member.team = member.team != null ? member.team : getTeam(member.team_id).orElseThrow {
+				new IllegalArgumentException("Team ID + " + member.team_id + " is unknown")
+			}
 			member.operator = operatorService.getOperator(member.operator_id)
-					.orElseThrow { new IllegalArgumentException("Operator ID " + member.operator_id + " is unknown")}
+					.orElseThrow { new IllegalArgumentException("Operator ID " + member.operator_id + " is unknown") }
 
 			server.save(member)
 
-			server.refreshMany(member.team,"members")
-			server.refreshMany(member.operator,"teams")
+			server.refreshMany(member.team, "members")
+			server.refreshMany(member.operator, "teams")
 		}
 
 		return tm
@@ -121,7 +127,7 @@ class TeamService {
 	def setTeamLead(long teamId, long operatorId) {
 		def team = getTeam(teamId).orElseThrow { new IllegalArgumentException("Team not found for ID " + teamId) }
 		def operator = operatorService.getOperator(operatorId)
-				.orElseThrow { new IllegalArgumentException("Operator not found for ID " + operatorId ) }
+				.orElseThrow { new IllegalArgumentException("Operator not found for ID " + operatorId) }
 
 		team.teamLead = operator
 
@@ -149,7 +155,7 @@ class TeamService {
 		def objectMapper = new ObjectMapper()
 		def jwtAppMetadata = objectMapper.convertValue(appMetadata.data, Map.class)
 
-		return getTeam(id).map( { it.teamLead?.id == jwtAppMetadata.get("operator_id")}).orElse(false)
+		return getTeam(id).map({ it.teamLead?.id == jwtAppMetadata.get("operator_id") }).orElse(false)
 	}
 
 }

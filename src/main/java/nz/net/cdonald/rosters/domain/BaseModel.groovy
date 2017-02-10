@@ -5,7 +5,6 @@ import com.avaje.ebean.annotation.WhenCreated
 import com.avaje.ebean.annotation.WhenModified
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import groovy.transform.CompileStatic
 
@@ -14,7 +13,7 @@ import java.sql.Timestamp
 
 @MappedSuperclass
 @CompileStatic
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class,property="id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class BaseModel extends Model {
 
 	@Id

@@ -31,6 +31,7 @@ We might consider making this a rule in Auth0 at some point
 
 NOTE! Auth0 has a rule to remap the permissions field in app_metadata to scope to make dealing with authorities easier
  */
+
 @Component
 class InviteAuthnComponent extends JwtAuthenticationProvider {
 
@@ -52,7 +53,7 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 	public InviteAuthnComponent(@Value('${jwt.secret}') String secret,
 								@Value('${jwt.issuer}') String issuer,
 								@Value('${jwt.audience}') String audience) {
-		super(secret.bytes,issuer,audience);
+		super(secret.bytes, issuer, audience);
 	}
 
 	@Override
@@ -60,7 +61,7 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 		def jwtAuthnToken = super.authenticate(authentication) as AuthenticationJsonWebToken
 		def jwt = JWT.decode(jwtAuthnToken.token)
 
-		if (jwtAuthnToken.getAuthorities().find { it.getAuthority() == "operator:unbound" } ) return jwtAuthnToken
+		if (jwtAuthnToken.getAuthorities().find { it.getAuthority() == "operator:unbound" }) return jwtAuthnToken
 
 		def objectMapper = new ObjectMapper()
 
@@ -78,7 +79,7 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 		def profile
 		try {
 			profile = auth0Service.getProfile(sub)
-		} catch(HttpResponseException ex) {
+		} catch (HttpResponseException ex) {
 			logger.error("Auth0 returned an error for subject {}", sub, ex)
 			if (ex.getStatusCode() == 404) throw new BadCredentialsException("Unknown subject")
 			if (ex.getStatusCode() == 400) throw new BadCredentialsException("Unknown subject")
@@ -99,7 +100,7 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 		//in the future we should do some kind of cache to reduce the 2 calls to auth0
 		if (profile?.app_metadata?.operator_id != null) {
 			String newToken = auth0Service.updateAppMetadataJwt(jwtAuthnToken.token,
-					jwtSecret,["operator_id":profile.app_metadata.operator_id])
+					jwtSecret, ["operator_id": profile.app_metadata.operator_id])
 			return super.authenticate(PreAuthenticatedAuthenticationJsonWebToken.usingToken(newToken))
 		}
 
@@ -131,7 +132,7 @@ class InviteAuthnComponent extends JwtAuthenticationProvider {
 		}
 
 		//JWT token needs to be updated (this will be reflected on the client the next time they login
-		String newToken = auth0Service.updateAppMetadataJwt(jwtAuthnToken.token,jwtSecret,["operator_id":operatorId])
+		String newToken = auth0Service.updateAppMetadataJwt(jwtAuthnToken.token, jwtSecret, ["operator_id": operatorId])
 
 		//now it'll be the updated token
 		return super.authenticate(PreAuthenticatedAuthenticationJsonWebToken.usingToken(newToken))
