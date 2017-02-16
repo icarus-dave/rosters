@@ -101,8 +101,8 @@ class OperatorServiceTest extends Assert {
 		def o3 = operatorService.updateOperator(o2)
 
 		assertEquals("zyx", o3.firstName)
-		assertEquals("foo@baz.com",o3.email)
-		assertEquals(1,o3.version)
+		assertEquals("foo@baz.com", o3.email)
+		assertEquals(1, o3.version)
 	}
 
 	@Test
@@ -113,7 +113,7 @@ class OperatorServiceTest extends Assert {
 		o1.email = "foo@baz.COM"
 
 		operatorService.createOperator(o1)
-		assertEquals("foo@baz.com",o1.email)
+		assertEquals("foo@baz.com", o1.email)
 
 		def o2 = new Operator()
 		o2.firstName = "abc"
@@ -131,7 +131,7 @@ class OperatorServiceTest extends Assert {
 		o2.lastName = "def"
 		o2.email = "baz@FOO.com"
 		operatorService.createOperator(o2)
-		assertEquals("baz@foo.com",o2.email)
+		assertEquals("baz@foo.com", o2.email)
 
 		o2.email = "foo@BAZ.com"
 		def ex2
@@ -263,7 +263,7 @@ class OperatorServiceTest extends Assert {
 
 		def o2 = operatorService.findByEmail("foo@baz.com")
 
-		assertEquals(o1.id,o2.id)
+		assertEquals(o1.id, o2.id)
 
 		def o3 = operatorService.findByEmail("baz@foo.com")
 		assertNull(o3)
@@ -284,12 +284,12 @@ class OperatorServiceTest extends Assert {
 		operatorService.createOperator(o1)
 
 		String operatorToken = Jwts.builder().setSubject("123")
-				.claim("app_metadata",["operator_id":o1.id]).compact()
+				.claim("app_metadata", ["operator_id": o1.id]).compact()
 
 		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
 
-		assertTrue(operatorService.authzOperatorUpdate(o1.id,authn))
-		assertFalse(operatorService.authzOperatorUpdate(456,authn))
+		assertTrue(operatorService.authzOperatorUpdate(o1.id, authn))
+		assertFalse(operatorService.authzOperatorUpdate(456, authn))
 	}
 
 	@Test
@@ -301,12 +301,12 @@ class OperatorServiceTest extends Assert {
 		operatorService.createOperator(o1)
 
 		String operatorToken = Jwts.builder().setSubject("123")
-				.claim("app_metadata",["operator_id":"${o1.id}" as String]).compact()
+				.claim("app_metadata", ["operator_id": "${o1.id}" as String]).compact()
 
 		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
 
-		assertTrue(operatorService.authzOperatorUpdate(o1.id,authn))
-		assertFalse(operatorService.authzOperatorUpdate(456,authn))
+		assertTrue(operatorService.authzOperatorUpdate(o1.id, authn))
+		assertFalse(operatorService.authzOperatorUpdate(456, authn))
 	}
 
 	@Test
@@ -319,7 +319,7 @@ class OperatorServiceTest extends Assert {
 
 		String operatorToken = Jwts.builder().setSubject("123").compact()
 		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
-		assertFalse(operatorService.authzOperatorUpdate(123,authn))
+		assertFalse(operatorService.authzOperatorUpdate(123, authn))
 	}
 
 	@Test
@@ -330,11 +330,21 @@ class OperatorServiceTest extends Assert {
 		o1.email = "foo@baz.com"
 		operatorService.createOperator(o1)
 
-		String operatorToken = Jwts.builder().setSubject("123").claim("app_metadata",[:]).compact()
+		String operatorToken = Jwts.builder().setSubject("123").claim("app_metadata", [:]).compact()
 		def authn = PreAuthenticatedAuthenticationJsonWebToken.usingToken(operatorToken).verify(null)
-		assertFalse(operatorService.authzOperatorUpdate(123,authn))
+		assertFalse(operatorService.authzOperatorUpdate(123, authn))
 	}
 
+	@Test
+	public void testInvite() throws Exception {
+		def o1 = new Operator()
+		o1.firstName = "abc"
+		o1.lastName = "def"
+		o1.email = "abc@cdonald.nz"
+		operatorService.createOperator(o1)
+
+		operatorService.inviteOperator(o1.id)
+	}
 }
 
 

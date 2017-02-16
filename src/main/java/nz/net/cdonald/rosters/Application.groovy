@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import nz.net.cdonald.rosters.auth.AuthenticationExceptionEntryPoint
 import nz.net.cdonald.rosters.auth.CustomAccessDeniedHandler
-import nz.net.cdonald.rosters.auth.InviteAuthnComponent
+import nz.net.cdonald.rosters.auth.AuthenticationProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
@@ -140,7 +140,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 	String secret
 
 	@Autowired
-	InviteAuthnComponent inviteAuthnComponent
+	AuthenticationProvider authenticationProvider
 
 	@Autowired
 	AuthenticationExceptionEntryPoint authenticationExceptionEntryPoint
@@ -151,7 +151,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		JwtWebSecurityConfigurer
-				.forHS256(audience, issuer, inviteAuthnComponent)
+				.forHS256(audience, issuer, authenticationProvider)
 				.configure(http)
 				.exceptionHandling()
 				.authenticationEntryPoint(authenticationExceptionEntryPoint)

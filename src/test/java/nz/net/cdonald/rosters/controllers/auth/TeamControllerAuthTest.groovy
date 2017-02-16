@@ -7,7 +7,7 @@ import nz.ac.auckland.morc.MorcTestBuilder
 import nz.net.cdonald.rosters.Application
 import nz.net.cdonald.rosters.domain.Operator
 import nz.net.cdonald.rosters.domain.Team
-import nz.net.cdonald.rosters.services.Auth0Service
+import nz.net.cdonald.rosters.services.UserService
 import nz.net.cdonald.rosters.services.OperatorService
 import nz.net.cdonald.rosters.services.TeamService
 import org.apache.camel.Exchange
@@ -27,7 +27,7 @@ class TeamControllerAuthTest extends MorcTestBuilder {
 		context = app.run()
 
 		def server = context.getBean(EbeanServer.class)
-		def auth0Service = context.getBean(Auth0Service.class)
+		def auth0Service = context.getBean(UserService.class)
 		def teamService = context.getBean(TeamService.class)
 		def operatorService = context.getBean(OperatorService.class)
 

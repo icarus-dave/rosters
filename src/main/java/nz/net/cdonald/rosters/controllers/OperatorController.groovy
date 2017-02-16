@@ -47,4 +47,10 @@ class OperatorController {
 		return new ResponseEntity(operatorService.updateOperator(operator), HttpStatus.OK)
 	}
 
+	@RequestMapping(value = "/{id}/invite", method = RequestMethod.POST)
+	@PreAuthorize("hasAuthority('operator:modify')")
+	public void inviteOperator(@PathVariable long id) {
+		operatorService.inviteOperator(id)
+	}
+
 }

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import nz.net.cdonald.rosters.domain.Operator
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 
@@ -19,6 +20,24 @@ class OperatorService {
 
 	@Autowired
 	EbeanServer server
+
+	@Autowired
+	UserService userService
+
+	@Autowired
+	MailService mailService
+
+	@Value('${mail.template.invite:invite}')
+	String inviteId
+
+	@Value('${registration.url:http://localhost:8080/register}')
+	String registrationUrl
+
+	@Value('${token.valid.seconds:43200}')
+	long tokenValidFor
+
+	@Value('${token.purgatory:300}')
+	long tokenPurgatory
 
 	public List<Operator> getOperators() {
 		def list = server.find(Operator.class).orderBy("UPPER(lastName)").findList()
@@ -63,6 +82,40 @@ class OperatorService {
 		server.update(operator)
 		logger.info("Updated operator {}:{}", operator.id, operator.email)
 		return operator
+	}
+
+	def void inviteOperator(long id) {
+		def operator = getOperator(id).orElseThrow { new IllegalArgumentException("Operator not found") }
+
+		def profile = userService.getOperatorProfile(id,true).orElse([:])
+
+		if (profile.signup_complete) {
+			logger.info("Operator $operator.email already signed up, no invite email will be sent")
+			return
+		}
+
+		def registrationToken = UUID.randomUUID() as String
+		def tokenValidTo = System.currentTimeSeconds()+tokenValidFor
+
+		//creates a new registration token if one already exists
+		if (profile.isEmpty())
+			//create a shell account for the user (will be deleted upon completion)
+			profile = userService.createShellUser(operator.email,
+													["operator_id"       : id,
+													 "registration_token": registrationToken,
+													 "token_valid_until" : tokenValidTo])
+		else {
+			//if it was issued less than 5 minutes ago then throw an exception
+			if (System.currentTimeSeconds() - (tokenValidTo - tokenValidFor) < tokenPurgatory)
+				throw new Exception("Too many invites for the user, please wait several minutes before trying again")
+			userService.updateAppMetadata(profile.id,["registration_token":registrationToken,"token_valid_until":tokenValidTo])
+		}
+
+		mailService.sendTemplate(operator.email, inviteId,
+				["registration_url": "$registrationUrl?token=$registrationToken&user_id=$profile.id&valid_to=$tokenValidTo",
+				 "first_name": operator.firstName])
+
+		logger.info("Invited user $operator.email to login")
 	}
 
 	def Operator findByEmail(String email) {

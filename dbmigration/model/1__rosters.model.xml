@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="duty" pkName="pk_duty">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="date" type="date" notnull="true"/>
+            <column name="state" type="varchar(9)" notnull="true" checkConstraint="check ( state in ('SCHEDULED','DRAFT','CONFIRMED','COMPLETED'))" checkConstraintName="ck_duty_state"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="when_modified" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="stand_downs" pkName="pk_stand_downs">
+            <column name="duty_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="operator_id" type="bigint" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_stand_downs_duty" columnNames="duty_id" refColumnNames="id" refTableName="duty" indexName="ix_stand_downs_duty"/>
+            <foreignKey name="fk_stand_downs_operator" columnNames="operator_id" refColumnNames="id" refTableName="operator" indexName="ix_stand_downs_operator"/>
+        </createTable>
+        <createTable name="replacements" pkName="pk_replacements">
+            <column name="duty_id" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="operator_id" type="bigint" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_replacements_duty" columnNames="duty_id" refColumnNames="id" refTableName="duty" indexName="ix_replacements_duty"/>
+            <foreignKey name="fk_replacements_operator" columnNames="operator_id" refColumnNames="id" refTableName="operator" indexName="ix_replacements_operator"/>
+        </createTable>
+        <createTable name="operator" pkName="pk_operator">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="active" type="boolean"/>
+            <column name="first_name" type="varchar" notnull="true"/>
+            <column name="last_name" type="varchar" notnull="true"/>
+            <column name="email" type="varchar" notnull="true" unique="uq_operator_email"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="when_modified" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="shift" pkName="pk_shift">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="duty_id" type="bigint" references="duty.id" foreignKeyName="fk_shift_duty_id" foreignKeyIndex="ix_shift_duty_id"/>
+            <column name="start" type="timestamp" notnull="true"/>
+            <column name="finish" type="timestamp" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="when_modified" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="team" pkName="pk_team">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="when_modified" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="team_members" identityType="sequence" pkName="pk_team_members">
+            <column name="operator_id" type="bigint" references="operator.id" foreignKeyName="fk_team_members_operator_id" foreignKeyIndex="ix_team_members_operator_id"/>
+            <column name="team_id" type="bigint" references="team.id" foreignKeyName="fk_team_members_team_id" foreignKeyIndex="ix_team_members_team_id"/>
+            <column name="roster_weighting" type="bigint"/>
+        </createTable>
+    </changeSet>
+</migration>

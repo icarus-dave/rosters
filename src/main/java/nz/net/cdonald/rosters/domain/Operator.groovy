@@ -33,7 +33,7 @@ public class Operator extends BaseModel {
 	String email;
 
 	@Column
-	@JsonIgnore
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	String authUserId;
 
 	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "operator")

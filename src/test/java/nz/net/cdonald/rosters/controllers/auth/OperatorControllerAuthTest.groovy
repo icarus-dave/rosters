@@ -1,14 +1,12 @@
 package nz.net.cdonald.rosters.controllers.auth
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import com.avaje.ebean.EbeanServer
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import nz.ac.auckland.morc.MorcTestBuilder
 import nz.net.cdonald.rosters.Application
 import nz.net.cdonald.rosters.domain.Operator
-import nz.net.cdonald.rosters.services.Auth0Service
+import nz.net.cdonald.rosters.services.UserService
 import org.apache.camel.Exchange
 import org.apache.camel.Predicate
 import org.apache.camel.Processor
@@ -26,7 +24,7 @@ class OperatorControllerAuthTest extends MorcTestBuilder {
 		context = app.run()
 
 		def server = context.getBean(EbeanServer.class)
-		def auth0Service = context.getBean(Auth0Service.class)
+		def auth0Service = context.getBean(UserService.class)
 
 		def operatorEndpoint = "http://localhost:8080/api/operator"
 

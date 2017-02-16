@@ -6,7 +6,7 @@ import com.auth0.spring.security.api.authentication.PreAuthenticatedAuthenticati
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import nz.net.cdonald.rosters.domain.Operator
-import nz.net.cdonald.rosters.services.Auth0Service
+import nz.net.cdonald.rosters.services.UserService
 import nz.net.cdonald.rosters.services.OperatorService
 import org.junit.Assert
 import org.junit.Test
@@ -32,10 +32,10 @@ class InviteAuthnComponentTest extends Assert {
 	String secret
 
 	@Autowired
-	InviteAuthnComponent inviteAuthnComponent
+	AuthenticationProvider inviteAuthnComponent
 
 	@Autowired
-	Auth0Service auth0Service
+	UserService userService
 
 	@Autowired
 	OperatorService operatorService
@@ -135,7 +135,7 @@ class InviteAuthnComponentTest extends Assert {
 		def email = UUID.randomUUID().toString().toLowerCase() + "@cdonald.nz"
 		def password = UUID.randomUUID().toString()
 
-		def user = auth0Service.createUser(email, password, true)
+		def user = userService.createUser(email, password, true)
 
 		def o = new Operator()
 		o.email = email
@@ -153,14 +153,14 @@ class InviteAuthnComponentTest extends Assert {
 		def o1 = operatorService.getOperator(o.id).orElseThrow { new Exception() }
 		assertEquals(user.user_id, o1.authUserId)
 
-		def user1 = auth0Service.getProfile(user.user_id)
+		def user1 = userService.getProfile(user.user_id)
 		assertEquals(o.id,user1.app_metadata.operator_id)
 
 		//check the returned metadata has added the key as needed
 		def claims = Jwts.parser().setSigningKey(secret.bytes).parseClaimsJws((authn as JwtAuthentication).token)
 		assertEquals(o.id, claims.getBody().get("app_metadata").operator_id)
 
-		auth0Service.deleteUser(user.user_id)
+		userService.deleteUser(user.user_id)
 	}
 
 	@Test
@@ -170,12 +170,12 @@ class InviteAuthnComponentTest extends Assert {
 		def password = UUID.randomUUID().toString()
 
 		//create user
-		def user = auth0Service.createUser(email, password, true)
+		def user = userService.createUser(email, password, true)
 
 		//pretend we've already gone through the authn process
 		//while the operator doesn't exist in the database (and not in the JWT below), it shouldn't matter
 		//as it'll come from the profile
-		auth0Service.updateAppMetadata(user.user_id,["operator_id":123])
+		userService.updateAppMetadata(user.user_id,["operator_id":123])
 
 		//there's no operator_id so it'll skip to checking the profile
 		String jwt = Jwts.builder().setSubject(user.user_id).signWith(SignatureAlgorithm.HS256,secret.bytes)
@@ -188,7 +188,7 @@ class InviteAuthnComponentTest extends Assert {
 		def claims = Jwts.parser().setSigningKey(secret.bytes).parseClaimsJws((authn as JwtAuthentication).token)
 		assertEquals(123, claims.getBody().get("app_metadata").operator_id)
 
-		auth0Service.deleteUser(user.user_id)
+		userService.deleteUser(user.user_id)
 	}
 
 
