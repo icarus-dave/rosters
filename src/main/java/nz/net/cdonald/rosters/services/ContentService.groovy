@@ -16,7 +16,7 @@ class ContentService {
 	CDAClient client
 
 	@Value('${contentful.locale:en-NZ}')
-	String locale
+	String locale = "en-NZ"
 
 	public ContentService(@Value('${contentful.space}') String space, @Value('${contentful.token}') String token) {
 		client = CDAClient.builder()
@@ -31,6 +31,7 @@ class ContentService {
 					.where("content_type", contentType)
 					.where("fields.name", name)
 					.all().entries().values()[0]
+			if (result == null) throw new Exception("Unable to find content $name for type $contentType")
 			return result.rawFields().collectEntries { key, value -> [key,value[locale]]}
 		} catch (CDAHttpException ex) {
 			throw new Exception("Error retrieving Contentful entity $name - ${ex.responseCode()}:${ex.responseMessage()}",ex)

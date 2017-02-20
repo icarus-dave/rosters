@@ -47,6 +47,7 @@ class AuthenticationProvider extends JwtAuthenticationProvider {
 		if (jwtAuthnToken.getAuthorities().find { it.getAuthority() == "operator:unbound" }) return jwtAuthnToken
 
 		def appMetadataClaim = jwt.getClaim("app_metadata")
+		if (appMetadataClaim == null) throw new BadCredentialsException("No app_metadata provided")
 		def jwtAppMetadata = new ObjectMapper().convertValue(appMetadataClaim.data, Map.class)
 		def operatorId = jwtAppMetadata.get("operator_id") as long
 		if (operatorId == null) throw new BadCredentialsException("Operator identifier not provided")
@@ -55,7 +56,7 @@ class AuthenticationProvider extends JwtAuthenticationProvider {
 		if (jwtAppMetadata.get("signup_complete") as boolean) return jwtAuthnToken
 
 		//Lets finish the sign-up/registration process
-		def operator = operatorService.getOperator(operatorId).orElseThrow { throw new BadCredentialsException("Unknown operator") }
+		def operator = operatorService.getOperator(operatorId).orElseThrow { new BadCredentialsException("Unknown operator") }
 
 		operator.authUserId = jwt.getClaim("sub").asString()
 		operatorService.updateOperator(operator)

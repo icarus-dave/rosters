@@ -50,13 +50,12 @@ class UserService {
 		}
 	}
 
-	public Optional<Map> getOperatorProfile(long operatorId, boolean shellUser = false) {
+	public Optional<Map> getOperatorProfile(long operatorId) {
 		def accessToken = getAccessToken();
 
 		def auth0Client = new RESTClient("https://$auth0Domain")
 
-		def q = "app_metadata.operator_id:$operatorId"
-		if (shellUser) q += " and app_metadata.shell_user:true"
+		def q = "app_metadata.operator_id:" + (operatorId < 0 ? "\\$operatorId" : operatorId )
 
 		try {
 			def resp = auth0Client.get(
@@ -123,10 +122,11 @@ class UserService {
 					headers: ["Authorization": "Bearer " + accessToken],
 					requestContentType: ContentType.JSON,
 					body: [connection    : connection,
+							//paranoid but want to be sure we don't spam users
 						   email         : email + emailSinkSuffix,
 						   password      : password,
 						   email_verified: emailVerified,
-						   app_metadata  : app_metadata + ["shell_user": true]]
+						   app_metadata  : app_metadata ]
 			)
 
 			logger.info("Created user for email {} ", email)

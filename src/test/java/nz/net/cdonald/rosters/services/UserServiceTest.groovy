@@ -3,6 +3,7 @@ package nz.net.cdonald.rosters.services
 import groovyx.net.http.HttpResponseException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import nz.net.cdonald.rosters.domain.Operator
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,102 +21,136 @@ class UserServiceTest extends Assert {
 	@Autowired
 	UserService userService
 
+	@Autowired
+	OperatorService operatorService
+
+
 	@Test
 	public void testGetProfile() {
-		def profile = userService.getProfile("google-apps|davidm@cdonald.net.nz")
-		assertEquals("davidm@cdonald.net.nz",profile.email)
+		def profile = userService.getProfile("google-oauth2|102641659505100008616").orElseThrow { new Exception() }
+		assertEquals("david.a.macdonald@createdigital.com.au",profile.email)
 		assertTrue(profile.email_verified)
 		assertEquals("baz",profile.app_metadata.foo)
 	}
 
 	@Test
 	public void testGetUnknownProfile() {
-		def e = null
+		def profile = userService.getProfile("123|123").orElse(null)
 
+		assertNull(profile)
+	}
+
+	@Test
+	public void testGetProfileBadAuthnz() {
+		userService.clientSecret = "123"
+
+		Exception e = null
 		try {
-			def profile = userService.getProfile("123|123")
-		} catch (HttpResponseException ex) {
+			def profile = userService.getProfile("google-oauth2|102641659505100008616").orElseThrow { new Exception() }
+		} catch (Exception ex) {
 			e = ex
 		}
 
-		assertNotNull(e);
-		assertEquals(404,e.response.getStatus())
+		assertNotNull(e)
+		assertTrue(e.message.contains("401"))
+	}
+
+	@Test
+	public void testGetOperatorProfile() {
+		def profile = userService.getOperatorProfile(-1).orElseThrow { new Exception() }
+
+		assertEquals("google-oauth2|102641659505100008616",profile["user_id"])
+		assertEquals("baz",profile["app_metadata"]["foo"])
+	}
+
+	@Test
+	public void testGetOperatorProfileNotFound() {
+		def profile = userService.getOperatorProfile(0).orElse(null)
+		assertNull(profile)
+	}
+
+	@Test
+	public void testGetOperatorProfileMultiple() {
+		Exception e = null
+		try {
+			userService.getOperatorProfile(-2).orElse(null)
+		} catch (Exception ex) {
+			e = ex
+		}
+
+		assertNotNull(e)
+	}
+
+	@Test
+	public void testGetOperatorProfileAuthnError() {
+		userService.clientSecret = "123"
+		Exception e = null
+		try {
+			userService.getOperatorProfile(1).orElse(null)
+		} catch (Exception ex) {
+			e = ex
+		}
+
+		assertNotNull(e)
+	}
+
+	@Test
+	public void testUpdateMetadataMissingUser() {
+		Exception e = null
+		try {
+			def uuid = UUID.randomUUID().toString().toUpperCase();
+			//set the value, retrieve it, and check it's what we expect
+			userService.updateAppMetadata("123", ["test": uuid])
+		} catch (Exception ex) {
+			e = ex
+		}
+		assertNotNull(e)
 	}
 
 	@Test
 	public void testUpdateMetadata() {
 		def uuid = UUID.randomUUID().toString().toUpperCase();
 		//set the value, retrieve it, and check it's what we expect
-		userService.updateAppMetadata("google-apps|davidm@cdonald.net.nz",["test":uuid])
+		userService.updateAppMetadata("google-oauth2|102641659505100008616",["test":uuid])
 
-		def profile = userService.getProfile("google-apps|davidm@cdonald.net.nz")
+		def profile = userService.getProfile("google-oauth2|102641659505100008616").orElseThrow { new Exception() }
 		assertEquals(uuid,profile.app_metadata.test)
 	}
 
 	@Test
-	public void updateAppMetadataJwtNoExistingMetadata() {
-		String jwt = Jwts.builder().setSubject("123|123").signWith(SignatureAlgorithm.HS256,userService.clientSecret.bytes)
-				.setIssuer(userService.clientId).setAudience(userService.audience).compact()
+	public void testCreateShellUserAndDelete() {
+		def uuid = UUID.randomUUID().toString().toUpperCase();
+		def user = userService.createShellUser("$uuid@cdonald.nz",["abc":"123"])
 
-		def newJwt = userService.updateAppMetadataJwt(jwt,userService.clientSecret,["foo":"baz", "moo":[1, 2]])
-		def newParsedJwt = Jwts.parser().setSigningKey(userService.clientSecret.bytes).parseClaimsJws(newJwt)
+		assertEquals("123",user["app_metadata"]["abc"])
+		assertTrue(user["email_verified"])
 
-		assertEquals("baz",newParsedJwt.getBody().get("app_metadata").foo)
-		assertEquals(2,newParsedJwt.getBody().get("app_metadata").moo.size())
+		userService.deleteUser(user.user_id)
+
+		def otherProfile = userService.getProfile(user.user_id).orElse(null)
+		assertNull(otherProfile)
 	}
 
 	@Test
-	public void updateAppMetadataJwtExistingMetadata() {
-		String jwt = Jwts.builder().setSubject("123|123").signWith(SignatureAlgorithm.HS256,userService.clientSecret.bytes)
-				.setIssuer(userService.clientId).setAudience(userService.audience).claim("app_metadata",["foo":"foo", "abc":"def"]).compact()
-
-		def newJwt = userService.updateAppMetadataJwt(jwt,userService.clientSecret,["foo":"baz", "moo":[1, 2]])
-		def newParsedJwt = Jwts.parser().setSigningKey(userService.clientSecret.bytes).parseClaimsJws(newJwt)
-
-		assertEquals("baz",newParsedJwt.getBody().get("app_metadata").foo)
-		assertEquals(2,newParsedJwt.getBody().get("app_metadata").moo.size())
-		assertEquals("def",newParsedJwt.getBody().get("app_metadata").abc)
-	}
-
-	@Test
-	public void testCreateReadDeleteUser() {
-		def email = UUID.randomUUID().toString().toLowerCase() + "@cdonald.nz"
-		def password = UUID.randomUUID().toString().toUpperCase()
-
-		def auth0User = userService.createUser(email,password)
-
-		assertNotNull(auth0User.user_id)
-		assertEquals(email,auth0User.email)
-		assertEquals(true,auth0User.email_verified);
-
-		def auth0UserGot = userService.getProfile(auth0User.user_id)
-
-		assertNotNull(auth0UserGot)
-		assertEquals(email,auth0UserGot.email)
-		assertEquals(true,auth0UserGot.email_verified);
-
-		userService.deleteUser(auth0User.user_id)
-
-		HttpResponseException e
+	public void testCreateShellUserExistingEmail() {
+		Exception e = null
 		try {
-			userService.getProfile(auth0User.user_id)
-		} catch(HttpResponseException ex) {
+			def user = userService.createShellUser("foo@cdonald.nz", ["abc": "123"])
+		} catch (Exception ex) {
 			e = ex
 		}
-
 		assertNotNull(e)
-		assertEquals(404,e.getStatusCode())
 	}
 
 	@Test
-	public void testCreateUser() {
-
-
-	}
-
-	@Test
-	public void testUpdateUser() {
-
+	public void testDeleteUserMissing() {
+		Exception e = null
+		try {
+			def user = userService.deleteUser("123")
+		} catch (Exception ex) {
+			e = ex
+		}
+		assertNotNull(e)
 	}
 
 }

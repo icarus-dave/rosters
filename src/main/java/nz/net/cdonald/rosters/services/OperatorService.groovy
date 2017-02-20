@@ -84,12 +84,12 @@ class OperatorService {
 		return operator
 	}
 
-	def void inviteOperator(long id) {
+	def inviteOperator(long id) {
 		def operator = getOperator(id).orElseThrow { new IllegalArgumentException("Operator not found") }
 
-		def profile = userService.getOperatorProfile(id,true).orElse([:])
+		def profile = userService.getOperatorProfile(id).orElse([:])
 
-		if (profile.signup_complete) {
+		if (profile.app_metadata?.signup_complete) {
 			logger.info("Operator $operator.email already signed up, no invite email will be sent")
 			return
 		}
@@ -108,7 +108,8 @@ class OperatorService {
 			//if it was issued less than 5 minutes ago then throw an exception
 			if (System.currentTimeSeconds() - (tokenValidTo - tokenValidFor) < tokenPurgatory)
 				throw new Exception("Too many invites for the user, please wait several minutes before trying again")
-			userService.updateAppMetadata(profile.id,["registration_token":registrationToken,"token_valid_until":tokenValidTo])
+			profile.app_metadata += ["registration_token":registrationToken,"token_valid_until":tokenValidTo]
+			userService.updateAppMetadata(profile.user_id,["registration_token":registrationToken,"token_valid_until":tokenValidTo])
 		}
 
 		mailService.sendTemplate(operator.email, inviteId,
@@ -116,6 +117,8 @@ class OperatorService {
 				 "first_name": operator.firstName])
 
 		logger.info("Invited user $operator.email to login")
+
+		return profile
 	}
 
 	def Operator findByEmail(String email) {

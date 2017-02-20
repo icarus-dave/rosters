@@ -127,7 +127,8 @@ class OperatorControllerTest extends MorcTestBuilder {
 				.expectation(httpStatusCode(409))
 
 
-
+		//invite operator
+		//invite operator missing
 	}
 
 	def generateOperator(firstName = "abc", lastName = "zyx", email = "foo@baz.com") {
